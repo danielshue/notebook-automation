@@ -211,7 +211,7 @@ internal class Program
                         logger.LogInformation("Entering chat mode (no arguments provided)");
 
                         // Create chat mode UI components
-                        var welcomeBanner = new WelcomeBanner(appConfig.Copilot);
+                        var welcomeBanner = new WelcomeBanner(appConfig);
                         var builtInCommands = new ChatBuiltInCommands(
                             serviceProvider.GetRequiredService<ILogger<ChatBuiltInCommands>>(),
                             copilotService);

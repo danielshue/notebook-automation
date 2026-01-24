@@ -2,67 +2,56 @@
 
 using System.Runtime.CompilerServices;
 
-using Microsoft.Extensions.AI;
+using GitHub.Copilot.SDK;
 
 namespace NotebookAutomation.Cli.Services.Copilot;
 
 /// <summary>
-/// Implementation of a Copilot conversation session with live AI integration.
+/// Adapter that wraps the GitHub Copilot SDK CopilotSession to implement ICopilotSession.
 /// </summary>
 /// <remarks>
-/// Uses Microsoft.Extensions.AI IChatClient for production AI responses with streaming
-/// and function calling support for all 21 registered Notebook Automation tools.
+/// This class adapts the event-based GitHub Copilot SDK session model to the
+/// simpler request-response model expected by our ICopilotSession interface.
 /// </remarks>
-public class CopilotSession : ICopilotSession
+public class CopilotSessionAdapter : ICopilotSession
 {
-    private readonly IChatClient chatClient;
-    private readonly ILogger<CopilotSession> logger;
+    private readonly GitHub.Copilot.SDK.CopilotSession sdkSession;
+    private readonly ILogger<CopilotSessionAdapter> logger;
     private readonly ISessionManager sessionManager;
-    private readonly INotebookTools notebookTools;
-    private readonly List<Microsoft.Extensions.AI.ChatMessage> conversationHistory = new();
+    private readonly List<ChatMessage> conversationHistory = [];
     private CopilotSessionMetadata metadata;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CopilotSession"/> class.
+    /// Initializes a new instance of the <see cref="CopilotSessionAdapter"/> class.
     /// </summary>
-    /// <param name="chatClient">The AI chat client instance.</param>
+    /// <param name="sdkSession">The GitHub Copilot SDK session instance.</param>
     /// <param name="config">Session configuration.</param>
     /// <param name="logger">Logger instance.</param>
-    /// <param name="notebookTools">Notebook tools registry.</param>
-    /// <param name="systemMessageBuilder">System message builder.</param>
-    /// <param name="sessionManager">Session manager.</param>
-    public CopilotSession(
-        IChatClient chatClient,
+    /// <param name="sessionManager">Session manager for persistence.</param>
+    public CopilotSessionAdapter(
+        GitHub.Copilot.SDK.CopilotSession sdkSession,
         CopilotSessionConfig? config,
-        ILogger<CopilotSession> logger,
-        INotebookTools notebookTools,
-        ISystemMessageBuilder systemMessageBuilder,
+        ILogger<CopilotSessionAdapter> logger,
         ISessionManager sessionManager)
     {
-        this.chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        this.sdkSession = sdkSession ?? throw new ArgumentNullException(nameof(sdkSession));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.notebookTools = notebookTools ?? throw new ArgumentNullException(nameof(notebookTools));
         this.sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
-        var sessionId = config?.SessionId ?? Guid.NewGuid().ToString("N")[..16];
         var now = DateTime.UtcNow;
 
         metadata = new CopilotSessionMetadata(
-            SessionId: sessionId,
+            SessionId: sdkSession.SessionId,
             CreatedAt: now,
             LastAccessedAt: now,
             Model: config?.Model,
             MessageCount: 0);
 
-        // Initialize with system message
-        var systemMessage = BuildSystemMessage(config, notebookTools, systemMessageBuilder);
-        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.System, systemMessage));
-
-        logger.LogInformation("Created Copilot session {SessionId}", sessionId);
+        logger.LogInformation("Created Copilot session adapter for {SessionId}", sdkSession.SessionId);
     }
 
     /// <inheritdoc/>
-    public string SessionId => metadata.SessionId;
+    public string SessionId => sdkSession.SessionId;
 
     /// <inheritdoc/>
     public string? Model => metadata.Model;
@@ -80,35 +69,48 @@ public class CopilotSession : ICopilotSession
 
         logger.LogDebug("Sending message to Copilot session {SessionId}", SessionId);
 
-        // Add user message to history
-        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message));
+        // Track user message
+        conversationHistory.Add(new ChatMessage("user", message, DateTime.UtcNow));
 
-        // Create chat options with tools
-        var options = new ChatOptions
+        var responseBuilder = new StringBuilder();
+        var completionSource = new TaskCompletionSource<string>();
+
+        // Subscribe to events
+        using var subscription = sdkSession.On(evt =>
         {
-            Tools = notebookTools.GetAllTools()
-                .Cast<AITool>()
-                .ToList()
-        };
+            switch (evt)
+            {
+                case AssistantMessageEvent msg:
+                    responseBuilder.Append(msg.Data.Content);
+                    break;
+                case SessionIdleEvent:
+                    completionSource.TrySetResult(responseBuilder.ToString());
+                    break;
+                case SessionErrorEvent err:
+                    completionSource.TrySetException(new CopilotException(err.Data.Message));
+                    break;
+                case ToolExecutionStartEvent toolStart:
+                    logger.LogInformation("Tool execution started: {ToolName}", toolStart.Data.ToolName);
+                    break;
+                case ToolExecutionCompleteEvent toolComplete:
+                    logger.LogInformation("Tool execution completed: {ToolCallId}", toolComplete.Data.ToolCallId);
+                    break;
+            }
+        });
 
         try
         {
-            // Call AI with full conversation history and tools
-            var response = await chatClient.GetResponseAsync(
-                conversationHistory,
-                options,
-                cancellationToken);
+            // Send the message
+            await sdkSession.SendAsync(new MessageOptions { Prompt = message });
 
-            var responseText = response.Text ?? "No response generated.";
+            // Wait for completion with timeout
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromMinutes(5));
 
-            // Add assistant response to history
-            if (response.Messages.Any())
-            {
-                foreach (var msg in response.Messages.Where(m => m.Role == ChatRole.Assistant))
-                {
-                    conversationHistory.Add(msg);
-                }
-            }
+            var response = await completionSource.Task.WaitAsync(cts.Token);
+
+            // Track assistant response
+            conversationHistory.Add(new ChatMessage("assistant", response, DateTime.UtcNow));
 
             // Update metadata
             metadata = metadata with
@@ -117,11 +119,16 @@ public class CopilotSession : ICopilotSession
                 MessageCount = metadata.MessageCount + 1
             };
 
-            return responseText;
+            return response;
+        }
+        catch (OperationCanceledException)
+        {
+            await sdkSession.AbortAsync();
+            throw new TimeoutException("Request timed out waiting for Copilot response");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error sending message to AI");
+            logger.LogError(ex, "Error sending message to Copilot");
             throw;
         }
     }
@@ -138,44 +145,60 @@ public class CopilotSession : ICopilotSession
 
         logger.LogDebug("Sending streaming message to Copilot session {SessionId}", SessionId);
 
-        // Add user message to history
-        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message));
-
-        // Create chat options with tools
-        var options = new ChatOptions
-        {
-            Tools = notebookTools.GetAllTools()
-                .Cast<AITool>()
-                .ToList()
-        };
+        // Track user message
+        conversationHistory.Add(new ChatMessage("user", message, DateTime.UtcNow));
 
         var responseBuilder = new StringBuilder();
+        var channel = System.Threading.Channels.Channel.CreateUnbounded<string>();
+        var completionSource = new TaskCompletionSource();
 
-        await foreach (var update in chatClient.GetStreamingResponseAsync(
-            conversationHistory,
-            options,
-            cancellationToken))
+        // Subscribe to events
+        using var subscription = sdkSession.On(evt =>
         {
-            if (!string.IsNullOrEmpty(update.Text))
+            switch (evt)
             {
-                responseBuilder.Append(update.Text);
-                yield return update.Text;
+                case AssistantMessageDeltaEvent delta:
+                    // Streaming chunk
+                    if (!string.IsNullOrEmpty(delta.Data.DeltaContent))
+                    {
+                        responseBuilder.Append(delta.Data.DeltaContent);
+                        channel.Writer.TryWrite(delta.Data.DeltaContent);
+                    }
+                    break;
+                case AssistantMessageEvent msg:
+                    // Final complete message (also sent even with streaming)
+                    break;
+                case SessionIdleEvent:
+                    channel.Writer.Complete();
+                    completionSource.TrySetResult();
+                    break;
+                case SessionErrorEvent err:
+                    channel.Writer.Complete(new CopilotException(err.Data.Message));
+                    completionSource.TrySetException(new CopilotException(err.Data.Message));
+                    break;
+                case ToolExecutionStartEvent toolStart:
+                    logger.LogInformation("Tool execution started: {ToolName}", toolStart.Data.ToolName);
+                    break;
+                case ToolExecutionCompleteEvent toolComplete:
+                    logger.LogInformation("Tool execution completed: {ToolCallId}", toolComplete.Data.ToolCallId);
+                    break;
             }
+        });
 
-            // Handle tool calls if present  (automatic via UseFunctionInvocation)
-            if (update.Contents.OfType<FunctionCallContent>().Any())
-            {
-                foreach (var toolCall in update.Contents.OfType<FunctionCallContent>())
-                {
-                    logger.LogInformation("Tool called: {ToolName}", toolCall.Name);
-                }
-            }
+        // Send the message (don't await completion)
+        _ = sdkSession.SendAsync(new MessageOptions { Prompt = message });
+
+        // Yield streaming chunks
+        await foreach (var chunk in channel.Reader.ReadAllAsync(cancellationToken))
+        {
+            yield return chunk;
         }
 
-        // Add complete assistant response to history
-        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(
-            ChatRole.Assistant,
-            responseBuilder.ToString()));
+        // Wait for completion
+        await completionSource.Task;
+
+        // Track assistant response
+        conversationHistory.Add(new ChatMessage("assistant", responseBuilder.ToString(), DateTime.UtcNow));
 
         // Update metadata
         metadata = metadata with
@@ -186,33 +209,44 @@ public class CopilotSession : ICopilotSession
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ChatMessage>> GetHistoryAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ChatMessage>> GetHistoryAsync(CancellationToken cancellationToken = default)
     {
-        // Filter out system messages and convert to interface type
-        var history = conversationHistory
-            .Where(m => m.Role != ChatRole.System)
-            .Select(m => new ChatMessage(
-                m.Role.Value,
-                m.Text ?? string.Empty,
-                DateTime.UtcNow)) // Note: original timestamps not preserved in current impl
-            .ToList();
+        // Try to get from SDK first
+        try
+        {
+            var events = await sdkSession.GetMessagesAsync();
+            var history = new List<ChatMessage>();
 
-        return Task.FromResult<IReadOnlyList<ChatMessage>>(history);
+            foreach (var evt in events)
+            {
+                switch (evt)
+                {
+                    case UserMessageEvent userMsg:
+                        history.Add(new ChatMessage("user", userMsg.Data.Content, DateTime.UtcNow));
+                        break;
+                    case AssistantMessageEvent assistantMsg:
+                        history.Add(new ChatMessage("assistant", assistantMsg.Data.Content, DateTime.UtcNow));
+                        break;
+                }
+            }
+
+            return history;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to get history from SDK, returning local history");
+            return conversationHistory.ToList();
+        }
     }
 
     /// <inheritdoc/>
     public Task ClearHistoryAsync(CancellationToken cancellationToken = default)
     {
-        // Keep system message, clear the rest
-        var systemMessage = conversationHistory.FirstOrDefault(m => m.Role == ChatRole.System);
         conversationHistory.Clear();
+        logger.LogInformation("Cleared local conversation history for session {SessionId}", SessionId);
 
-        if (systemMessage != null)
-        {
-            conversationHistory.Add(systemMessage);
-        }
-
-        logger.LogInformation("Cleared conversation history for session {SessionId}", SessionId);
+        // Note: SDK sessions don't support clearing history directly
+        // A new session would need to be created for a fresh start
         return Task.CompletedTask;
     }
 
@@ -220,7 +254,7 @@ public class CopilotSession : ICopilotSession
     public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
         await sessionManager.SaveSessionAsync(metadata, cancellationToken);
-        logger.LogInformation("Saved session {SessionId}", SessionId);
+        logger.LogInformation("Saved session metadata for {SessionId}", SessionId);
     }
 
     /// <inheritdoc/>
@@ -235,29 +269,31 @@ public class CopilotSession : ICopilotSession
             logger.LogError(ex, "Error saving session {SessionId} during disposal", SessionId);
         }
 
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Build the system message for the session.
-    /// </summary>
-    private string BuildSystemMessage(
-        CopilotSessionConfig? config,
-        INotebookTools notebookTools,
-        ISystemMessageBuilder systemMessageBuilder)
-    {
-        if (config?.SystemMessage != null)
+        try
         {
-            return config.SystemMessage.Mode == SystemMessageMode.Replace
-                ? config.SystemMessage.Content
-                : systemMessageBuilder.BuildDefaultSystemMessage() + "\n\n" + config.SystemMessage.Content;
+            await sdkSession.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error disposing SDK session {SessionId}", SessionId);
         }
 
-        // Build system message with tools
-        var toolNames = notebookTools.GetAllTools()
-            .Select((t, i) => $"tool_{i}") // Simplified - in real impl, extract actual tool names from AIFunction
-            .ToList();
-
-        return systemMessageBuilder.BuildSystemMessageWithTools(toolNames);
+        GC.SuppressFinalize(this);
     }
+}
+
+/// <summary>
+/// Exception thrown when a Copilot operation fails.
+/// </summary>
+public class CopilotException : Exception
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CopilotException"/> class.
+    /// </summary>
+    public CopilotException(string message) : base(message) { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CopilotException"/> class.
+    /// </summary>
+    public CopilotException(string message, Exception innerException) : base(message, innerException) { }
 }

@@ -13,12 +13,6 @@ public class CopilotConfig
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the path to the Copilot CLI executable.
-    /// If null, will use "gh" from PATH.
-    /// </summary>
-    public string? CliPath { get; set; }
-
-    /// <summary>
     /// Gets or sets the default model to use for chat sessions.
     /// </summary>
     public string? DefaultModel { get; set; }
@@ -63,4 +57,76 @@ public class CopilotConfig
     /// Gets or sets the log level for Copilot SDK operations.
     /// </summary>
     public string LogLevel { get; set; } = "Information";
+
+    /// <summary>
+    /// Gets or sets accessibility options.
+    /// </summary>
+    public CopilotAccessibilityConfig Accessibility { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets logging options.
+    /// </summary>
+    public CopilotLoggingConfig Logging { get; set; } = new();
+}
+
+/// <summary>
+/// Accessibility configuration for Copilot CLI.
+/// </summary>
+public record CopilotAccessibilityConfig
+{
+    /// <summary>
+    /// Gets or sets a value indicating whether high contrast mode is enabled.
+    /// </summary>
+    public bool HighContrast { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether screen reader mode is enabled.
+    /// </summary>
+    public bool ScreenReaderMode { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to reduce motion/animations.
+    /// </summary>
+    public bool ReducedMotion { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to use simple output format.
+    /// </summary>
+    public bool SimpleOutput { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to announce progress updates.
+    /// </summary>
+    public bool AnnounceProgress { get; init; }
+}
+
+/// <summary>
+/// Logging configuration for Copilot sessions.
+/// </summary>
+public class CopilotLoggingConfig
+{
+    /// <summary>
+    /// Gets or sets a value indicating whether session logging is enabled.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the directory for session logs.
+    /// </summary>
+    public string? LogDirectory { get; set; }
+
+    /// <summary>
+    /// Gets or sets the retention period for logs in days.
+    /// </summary>
+    public int RetentionDays { get; set; } = 30;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to log request content.
+    /// </summary>
+    public bool LogRequestContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to log response content.
+    /// </summary>
+    public bool LogResponseContent { get; set; }
 }

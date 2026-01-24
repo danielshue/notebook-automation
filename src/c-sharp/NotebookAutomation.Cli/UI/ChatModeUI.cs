@@ -1,5 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
+
 using NotebookAutomation.Cli.Services.Copilot;
 
 namespace NotebookAutomation.Cli.UI;
@@ -75,22 +77,78 @@ public class ChatModeUI
             // Start Copilot service
             await copilotService.StartAsync(cancellationToken: cancellationToken);
 
+            // Check if service actually started (SDK may fail due to protocol mismatch)
+            if (!copilotService.IsRunning)
+            {
+                // Fall back to launching copilot CLI directly
+                return await LaunchCopilotCliFallbackAsync(cancellationToken);
+            }
+
             // Create or resume session
             ICopilotSession? session = null;
             try
             {
-                if (options.Resume || !string.IsNullOrEmpty(options.SessionId))
+                var sessionModel = options.Model ?? "gpt-4o";
+
+                if (!string.IsNullOrEmpty(options.SessionId))
                 {
-                    AnsiConsole.MarkupLine("[yellow]Session resumption will be implemented in Phase 4[/]");
+                    // Resume specific session
+                    try
+                    {
+                        session = await copilotService.ResumeSessionAsync(
+                            options.SessionId,
+                            new CopilotSessionConfig { Model = sessionModel, Streaming = true },
+                            cancellationToken);
+                        AnsiConsole.MarkupLine($"[dim]Resumed session:[/] [cyan]{options.SessionId[..Math.Min(8, options.SessionId.Length)]}...[/]");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Failed to resume session {SessionId}", options.SessionId);
+                        AnsiConsole.MarkupLine($"[yellow]Could not resume session. Starting new session.[/]");
+                        session = await copilotService.CreateSessionAsync(
+                            new CopilotSessionConfig { Model = sessionModel, Streaming = true },
+                            cancellationToken);
+                    }
+                }
+                else if (options.Resume)
+                {
+                    // Try to resume most recent session
+                    var sessions = await copilotService.ListSessionsAsync(cancellationToken);
+                    var recentSession = sessions.OrderByDescending(s => s.LastAccessedAt).FirstOrDefault();
+                    if (recentSession != null)
+                    {
+                        try
+                        {
+                            session = await copilotService.ResumeSessionAsync(
+                                recentSession.SessionId,
+                                new CopilotSessionConfig { Model = sessionModel, Streaming = true },
+                                cancellationToken);
+                            AnsiConsole.MarkupLine($"[dim]Resumed most recent session[/]");
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogWarning(ex, "Failed to resume recent session");
+                            session = await copilotService.CreateSessionAsync(
+                                new CopilotSessionConfig { Model = sessionModel, Streaming = true },
+                                cancellationToken);
+                        }
+                    }
+                    else
+                    {
+                        session = await copilotService.CreateSessionAsync(
+                            new CopilotSessionConfig { Model = sessionModel, Streaming = true },
+                            cancellationToken);
+                    }
+                }
+                else
+                {
+                    session = await copilotService.CreateSessionAsync(
+                        new CopilotSessionConfig { Model = sessionModel, Streaming = true },
+                        cancellationToken);
                 }
 
-                session = await copilotService.CreateSessionAsync(
-                    new CopilotSessionConfig
-                    {
-                        Model = options.Model,
-                        Streaming = true
-                    },
-                    cancellationToken);
+                // Set current model in built-in commands
+                builtInCommands.CurrentModel = session.Model ?? sessionModel;
 
                 // Run chat loop
                 await RunChatLoopAsync(session, cancellationToken);
@@ -200,32 +258,37 @@ public class ChatModeUI
     {
         try
         {
-            if (highContrast)
-            {
-                Console.Write("AI > ");
-            }
-            else
-            {
-                AnsiConsole.Markup("[green]AI[/] > ");
-            }
-
             var responseBuilder = new StringBuilder();
 
-            await foreach (var chunk in session.SendMessageStreamAsync(message, cancellationToken))
-            {
-                responseBuilder.Append(chunk);
+            // Show spinner while getting response
+            await AnsiConsole.Status()
+                .Spinner(Spinner.Known.Dots)
+                .SpinnerStyle(Style.Parse("green"))
+                .StartAsync("Thinking...", async ctx =>
+                {
+                    await foreach (var chunk in session.SendMessageStreamAsync(message, cancellationToken))
+                    {
+                        responseBuilder.Append(chunk);
+                    }
+                });
 
+            // Render the complete response with markdown formatting
+            var fullResponse = responseBuilder.ToString();
+            if (!string.IsNullOrWhiteSpace(fullResponse))
+            {
                 if (highContrast)
                 {
-                    Console.Write(chunk);
+                    Console.Write("AI > ");
+                    Console.WriteLine(fullResponse);
                 }
                 else
                 {
-                    AnsiConsole.Markup(chunk.EscapeMarkup());
+                    AnsiConsole.Markup("[green]AI[/] > ");
+                    // Use markdown renderer for formatted output
+                    MarkdownRenderer.RenderLine(fullResponse);
                 }
             }
 
-            Console.WriteLine();
             Console.WriteLine();
         }
         catch (NotImplementedException)
@@ -246,17 +309,42 @@ public class ChatModeUI
 
         if (!availability.IsCliInstalled)
         {
-            AnsiConsole.MarkupLine("[yellow]GitHub CLI with Copilot extension is not installed.[/]");
+            AnsiConsole.MarkupLine("[yellow]GitHub Copilot CLI is not installed.[/]");
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("Install with:");
-            AnsiConsole.MarkupLine("  [cyan]gh extension install github/gh-copilot[/]");
+
+            // Show platform-specific quick install hint
+            var instructions = CopilotInstallationGuide.GetInstallationInstructions();
+            AnsiConsole.MarkupLine($"[dim]Platform: {instructions.Platform}[/]");
+            AnsiConsole.WriteLine();
+
+            AnsiConsole.MarkupLine("[bold]Quick Install:[/]");
+            switch (instructions.Platform)
+            {
+                case "Windows":
+                    AnsiConsole.MarkupLine("  [cyan]winget install GitHub.Copilot[/]");
+                    break;
+                case "macOS":
+                    AnsiConsole.MarkupLine("  [cyan]brew install gh[/]");
+                    AnsiConsole.MarkupLine("  [cyan]gh extension install github/gh-copilot[/]");
+                    break;
+                case "Linux":
+                    AnsiConsole.MarkupLine("  [cyan]gh extension install github/gh-copilot[/]");
+                    break;
+                default:
+                    AnsiConsole.MarkupLine("  [cyan]npm install -g @githubnext/github-copilot-cli[/]");
+                    break;
+            }
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]For detailed installation instructions, run: [cyan]na copilot --install-guide[/][/]");
+            AnsiConsole.MarkupLine($"[dim]Documentation: [link={instructions.DocumentationUrl}]{instructions.DocumentationUrl}[/][/]");
         }
         else if (!availability.IsAuthenticated)
         {
-            AnsiConsole.MarkupLine("[yellow]GitHub CLI is not authenticated.[/]");
+            AnsiConsole.MarkupLine("[yellow]GitHub is not authenticated.[/]");
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("Authenticate with:");
-            AnsiConsole.MarkupLine("  [cyan]gh auth login[/]");
+            AnsiConsole.MarkupLine("  [cyan]gh auth login --scopes copilot[/]");
         }
         else if (availability.ErrorMessage != null)
         {
@@ -264,6 +352,62 @@ public class ChatModeUI
         }
 
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]Falling back to regular CLI mode...[/]");
+        AnsiConsole.MarkupLine("[dim]Chat mode requires GitHub Copilot. Use [cyan]na --help[/] for available commands.[/]");
+    }
+
+    /// <summary>
+    /// Display error when SDK fails to connect to Copilot CLI.
+    /// </summary>
+    private void DisplaySdkConnectionError()
+    {
+        AnsiConsole.MarkupLine("[red]Failed to connect to GitHub Copilot[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[yellow]The GitHub Copilot SDK could not connect to the Copilot CLI.[/]");
+        AnsiConsole.MarkupLine("[dim]This may be due to a version mismatch between the SDK and CLI.[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("Try updating your Copilot CLI:");
+        AnsiConsole.MarkupLine("  [cyan]npm update -g @anthropic-ai/copilot[/]");
+        AnsiConsole.MarkupLine("  or");
+        AnsiConsole.MarkupLine("  [cyan]gh extension upgrade gh-copilot[/]");
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine("[dim]Chat mode requires a compatible GitHub Copilot CLI. Use [cyan]na --help[/] for available commands.[/]");
+    }
+
+    /// <summary>
+    /// Launch the Copilot CLI directly as a fallback when SDK connection fails.
+    /// </summary>
+    private async Task<int> LaunchCopilotCliFallbackAsync(CancellationToken cancellationToken)
+    {
+        AnsiConsole.MarkupLine("[yellow]SDK connection unavailable. Launching Copilot CLI directly...[/]");
+        AnsiConsole.WriteLine();
+
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "copilot",
+                    UseShellExecute = false,
+                    RedirectStandardInput = false,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = false,
+                    CreateNoWindow = false
+                }
+            };
+
+            process.Start();
+
+            // Wait for the process to exit
+            await process.WaitForExitAsync(cancellationToken);
+
+            return process.ExitCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to launch Copilot CLI");
+            DisplaySdkConnectionError();
+            return 1;
+        }
     }
 }

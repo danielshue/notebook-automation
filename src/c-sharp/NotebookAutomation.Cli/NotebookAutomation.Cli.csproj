@@ -5,10 +5,9 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Azure.AI.OpenAI" Version="2.5.0-beta.1" />
-        <PackageReference Include="GitHub.Copilot.SDK" Version="0.1.17" />
+        <PackageReference Include="GitHub.Copilot.SDK" Version="0.1.18" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.0.1" />
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI"
-            Version="9.10.0-preview.1.25513.3" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.10.0-preview.1.25513.3" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
         <PackageReference Include="Spectre.Console" Version="0.50.0" />
@@ -45,22 +44,18 @@
     <Target Name="CopyPrompts" BeforeTargets="Build">
         <!-- Copy prompts from Core project -->
         <ItemGroup>
-            <CorePromptFiles
-                Include="$(MSBuildThisFileDirectory)..\NotebookAutomation.Core\Prompts\*.md" />
+            <CorePromptFiles Include="$(MSBuildThisFileDirectory)..\NotebookAutomation.Core\Prompts\*.md" />
         </ItemGroup>
-        <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
 
         <!-- Copy prompts from repository root -->
         <ItemGroup>
             <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\prompts\*.md" />
         </ItemGroup>
-        <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
 
         <!-- Log info about prompt files -->
-        <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\"
-            Importance="high" />
+        <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\" Importance="high" />
     </Target>
 
     <!-- Copy config files from repository root -->
@@ -68,8 +63,7 @@
         <ItemGroup>
             <RepoConfigFiles Include="$(MSBuildThisFileDirectory)..\..\..\config\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(RepoConfigFiles)" DestinationFolder="$(OutDir)config\"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(RepoConfigFiles)" DestinationFolder="$(OutDir)config\" SkipUnchangedFiles="true" />
 
         <!-- Log info about config files -->
         <Message Text="Copying config files to output directory: $(OutDir)config\" Importance="high" />

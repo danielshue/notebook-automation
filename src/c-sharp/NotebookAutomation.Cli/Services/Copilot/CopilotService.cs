@@ -1,19 +1,15 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
+using GitHub.Copilot.SDK;
 
 namespace NotebookAutomation.Cli.Services.Copilot;
 
 /// <summary>
-/// Implementation of ICopilotService with live AI integration.
+/// Implementation of ICopilotService using the official GitHub Copilot SDK.
 /// </summary>
 /// <remarks>
-/// This implementation uses Microsoft.Extensions.AI with Azure OpenAI or OpenAI
-/// for production AI responses with function calling support.
+/// This implementation uses the GitHub.Copilot.SDK to connect to the Copilot CLI
+/// server via JSON-RPC, leveraging the user's existing GitHub Copilot subscription.
 /// </remarks>
 public class CopilotService : ICopilotService
 {
@@ -25,7 +21,7 @@ public class CopilotService : ICopilotService
     private readonly ILoggerFactory loggerFactory;
     private readonly AppConfig appConfig;
     private bool isRunning;
-    private IChatClient? chatClient;
+    private CopilotClient? copilotClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CopilotService"/> class.
@@ -59,84 +55,116 @@ public class CopilotService : ICopilotService
     }
 
     /// <inheritdoc/>
-    public Task StartAsync(
+    public async Task StartAsync(
         CopilotStartupOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Starting Copilot service with AI integration");
+        logger.LogInformation("Starting Copilot service with GitHub Copilot SDK");
 
         try
         {
-            // Get API configuration
-            var provider = appConfig.AiService?.Provider?.ToLowerInvariant() ?? "openai";
-            var apiKey = appConfig.AiService?.GetApiKey();
-
-            if (string.IsNullOrWhiteSpace(apiKey))
+            // Configure the Copilot client
+            var clientOptions = new CopilotClientOptions
             {
-                logger.LogWarning("No AI API key configured. Service will remain stopped.");
-                logger.LogInformation("Set AZURE_OPENAI_KEY, OPENAI_API_KEY, or FOUNDRY_API_KEY environment variable to enable AI features.");
-                isRunning = false;
-                return Task.CompletedTask;
-            }
-
-            // Create chat client based on provider
-            chatClient = provider switch
-            {
-                "azure" => CreateAzureOpenAIChatClient(apiKey, options),
-                "openai" => CreateOpenAIChatClient(apiKey, options),
-                _ => throw new InvalidOperationException($"Unsupported AI provider: {provider}")
+                AutoStart = true,
+                AutoRestart = true,
+                UseStdio = true,
+                LogLevel = "debug",
+                Logger = loggerFactory.CreateLogger<CopilotClient>()
             };
 
+            logger.LogInformation("Using auto-detected copilot CLI from PATH");
+
+            // Create and start the Copilot client
+            logger.LogInformation("Creating CopilotClient...");
+            copilotClient = new CopilotClient(clientOptions);
+
+            logger.LogInformation("Starting CopilotClient...");
+            await copilotClient.StartAsync();
+
+            // Verify connection with a ping
+            logger.LogInformation("Sending ping to verify connection...");
+            var pingResponse = await copilotClient.PingAsync("startup-check");
+            logger.LogDebug("Copilot CLI ping response: {Response}", pingResponse);
+
             isRunning = true;
-            logger.LogInformation("Copilot service started successfully with {Provider} provider", provider);
+            logger.LogInformation("Copilot service started successfully via GitHub Copilot SDK");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to start Copilot service");
             isRunning = false;
-            // Don't rethrow - allow graceful degradation
-            logger.LogWarning("Copilot service will remain unavailable due to startup failure");
+            logger.LogWarning("Copilot service will remain unavailable. Ensure GitHub Copilot CLI is installed and authenticated.");
         }
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public Task StopAsync(CancellationToken cancellationToken = default)
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Stopping Copilot service");
 
-        if (chatClient is IDisposable disposable)
+        if (copilotClient != null)
         {
-            disposable.Dispose();
+            try
+            {
+                await copilotClient.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Error during graceful Copilot client stop, forcing stop");
+                try
+                {
+                    await copilotClient.ForceStopAsync();
+                }
+                catch (Exception forceEx)
+                {
+                    logger.LogDebug(forceEx, "Error during force stop (may be expected if client never started)");
+                }
+            }
+            finally
+            {
+                try
+                {
+                    await copilotClient.DisposeAsync();
+                }
+                catch (Exception disposeEx)
+                {
+                    logger.LogDebug(disposeEx, "Error disposing Copilot client");
+                }
+
+                copilotClient = null;
+            }
         }
 
-        chatClient = null;
         isRunning = false;
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
-    public Task<ICopilotSession> CreateSessionAsync(
+    public async Task<ICopilotSession> CreateSessionAsync(
         CopilotSessionConfig? config = null,
         CancellationToken cancellationToken = default)
     {
-        if (!isRunning || chatClient == null)
+        if (!isRunning || copilotClient == null)
         {
             throw new InvalidOperationException("Copilot service is not running. Call StartAsync first.");
         }
 
         logger.LogInformation("Creating new Copilot session");
 
-        var session = new CopilotSession(
-            chatClient,
+        // Build session configuration for the SDK
+        var sessionConfig = BuildSessionConfig(config);
+
+        // Create session via SDK
+        var sdkSession = await copilotClient.CreateSessionAsync(sessionConfig);
+
+        // Wrap in our session adapter
+        var session = new CopilotSessionAdapter(
+            sdkSession,
             config,
-            loggerFactory.CreateLogger<CopilotSession>(),
-            notebookTools,
-            systemMessageBuilder,
+            loggerFactory.CreateLogger<CopilotSessionAdapter>(),
             sessionManager);
 
-        return Task.FromResult<ICopilotSession>(session);
+        return session;
     }
 
     /// <inheritdoc/>
@@ -145,26 +173,21 @@ public class CopilotService : ICopilotService
         CopilotSessionConfig? config = null,
         CancellationToken cancellationToken = default)
     {
-        if (!isRunning || chatClient == null)
+        if (!isRunning || copilotClient == null)
         {
             throw new InvalidOperationException("Copilot service is not running. Call StartAsync first.");
         }
 
         logger.LogInformation("Resuming session {SessionId}", sessionId);
 
-        var sessionMetadata = await sessionManager.LoadSessionAsync(sessionId, cancellationToken);
-        if (sessionMetadata == null)
-        {
-            throw new InvalidOperationException($"Session {sessionId} not found");
-        }
+        // Resume session via SDK
+        var sdkSession = await copilotClient.ResumeSessionAsync(sessionId);
 
-        // Create new session (history loading would be implemented here)
-        var session = new CopilotSession(
-            chatClient,
+        // Wrap in our session adapter
+        var session = new CopilotSessionAdapter(
+            sdkSession,
             config,
-            loggerFactory.CreateLogger<CopilotSession>(),
-            notebookTools,
-            systemMessageBuilder,
+            loggerFactory.CreateLogger<CopilotSessionAdapter>(),
             sessionManager);
 
         logger.LogInformation("Resumed session {SessionId}", sessionId);
@@ -172,18 +195,53 @@ public class CopilotService : ICopilotService
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<CopilotSessionMetadata>> ListSessionsAsync(
+    public async Task<IReadOnlyList<CopilotSessionMetadata>> ListSessionsAsync(
         CancellationToken cancellationToken = default)
     {
-        return sessionManager.ListSessionsAsync(cancellationToken);
+        if (copilotClient != null && isRunning)
+        {
+            try
+            {
+                // Get sessions from SDK
+                var sdkSessions = await copilotClient.ListSessionsAsync();
+
+                return sdkSessions.Select(s => new CopilotSessionMetadata(
+                    SessionId: s.SessionId,
+                    CreatedAt: DateTime.UtcNow, // SDK doesn't expose creation time
+                    LastAccessedAt: DateTime.UtcNow,
+                    Model: null, // SDK doesn't expose model in metadata
+                    MessageCount: 0
+                )).ToList();
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to list sessions from SDK, falling back to local storage");
+            }
+        }
+
+        // Fallback to local session manager
+        return await sessionManager.ListSessionsAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task DeleteSessionAsync(
+    public async Task DeleteSessionAsync(
         string sessionId,
         CancellationToken cancellationToken = default)
     {
-        return sessionManager.DeleteSessionAsync(sessionId, cancellationToken);
+        if (copilotClient != null && isRunning)
+        {
+            try
+            {
+                await copilotClient.DeleteSessionAsync(sessionId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to delete session from SDK");
+            }
+        }
+
+        // Also delete from local storage
+        await sessionManager.DeleteSessionAsync(sessionId, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -203,7 +261,7 @@ public class CopilotService : ICopilotService
         AskOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        if (!isRunning || chatClient == null)
+        if (!isRunning || copilotClient == null)
         {
             throw new InvalidOperationException("Copilot service is not running. Call StartAsync first.");
         }
@@ -217,15 +275,46 @@ public class CopilotService : ICopilotService
 
         try
         {
-            // Create message for the AI
-            var messages = new List<Microsoft.Extensions.AI.ChatMessage>
-            {
-                new(ChatRole.User, prompt)
-            };
+            // Create a temporary session for the one-shot question
+            var sessionConfig = BuildSessionConfig(null);
+            await using var session = await copilotClient.CreateSessionAsync(sessionConfig);
 
-            // Send to AI and get response
-            var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
-            return response.Text ?? "No response generated.";
+            var responseBuilder = new StringBuilder();
+            var completionSource = new TaskCompletionSource<string>();
+
+            // Subscribe to events
+            session.On(evt =>
+            {
+                switch (evt)
+                {
+                    case AssistantMessageEvent msg:
+                        responseBuilder.Append(msg.Data.Content);
+                        break;
+                    case SessionIdleEvent:
+                        completionSource.TrySetResult(responseBuilder.ToString());
+                        break;
+                    case SessionErrorEvent err:
+                        completionSource.TrySetException(new Exception(err.Data.Message));
+                        break;
+                }
+            });
+
+            // Send the message
+            await session.SendAsync(new MessageOptions { Prompt = prompt });
+
+            // Wait for response with timeout
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromMinutes(2));
+
+            try
+            {
+                return await completionSource.Task.WaitAsync(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                await session.AbortAsync();
+                throw new TimeoutException("Request timed out waiting for Copilot response");
+            }
         }
         catch (Exception ex)
         {
@@ -238,13 +327,14 @@ public class CopilotService : ICopilotService
     public Task<IReadOnlyList<string>> GetAvailableModelsAsync(
         CancellationToken cancellationToken = default)
     {
-        // Return common model names
+        // Return models supported by GitHub Copilot SDK
         var models = new List<string>
         {
+            "gpt-4o",
             "gpt-4",
-            "gpt-4-turbo",
-            "gpt-3.5-turbo",
-            "claude-sonnet-4.5"
+            "claude-sonnet-4.5",
+            "o1-preview",
+            "o1-mini"
         };
 
         logger.LogDebug("Returning {Count} available models", models.Count);
@@ -252,55 +342,52 @@ public class CopilotService : ICopilotService
     }
 
     /// <summary>
-    /// Create an Azure OpenAI chat client.
+    /// Build SDK session configuration from our config model.
     /// </summary>
-    private IChatClient CreateAzureOpenAIChatClient(
-        string apiKey,
-        CopilotStartupOptions? options)
+    private SessionConfig BuildSessionConfig(CopilotSessionConfig? config)
     {
-        var endpoint = appConfig.AiService?.Azure?.Endpoint;
-        if (string.IsNullOrWhiteSpace(endpoint))
+        var sessionConfig = new SessionConfig
         {
-            throw new InvalidOperationException("Azure OpenAI endpoint not configured");
+            Model = config?.Model ?? appConfig.Copilot?.DefaultModel ?? "gpt-4o",
+            Streaming = appConfig.Copilot?.EnableStreaming ?? true,
+            Tools = notebookTools.GetAllTools().ToList()
+        };
+
+        // Configure system message
+        if (config?.SystemMessage != null)
+        {
+            sessionConfig.SystemMessage = new GitHub.Copilot.SDK.SystemMessageConfig
+            {
+                Mode = config.SystemMessage.Mode == SystemMessageMode.Replace
+                    ? GitHub.Copilot.SDK.SystemMessageMode.Replace
+                    : GitHub.Copilot.SDK.SystemMessageMode.Append,
+                Content = config.SystemMessage.Content
+            };
+        }
+        else
+        {
+            // Use default system message
+            var toolNames = notebookTools.GetAllTools()
+                .Select(t => t.Name)
+                .ToList();
+
+            sessionConfig.SystemMessage = new GitHub.Copilot.SDK.SystemMessageConfig
+            {
+                Mode = GitHub.Copilot.SDK.SystemMessageMode.Append,
+                Content = systemMessageBuilder.BuildSystemMessageWithTools(toolNames)
+            };
         }
 
-        var deploymentName = appConfig.AiService?.Azure?.Deployment ?? "gpt4";
+        // Configure infinite sessions
+        if (appConfig.Copilot?.SessionRetentionDays > 0)
+        {
+            sessionConfig.InfiniteSessions = new InfiniteSessionConfig
+            {
+                Enabled = true
+            };
+        }
 
-        logger.LogInformation("Creating Azure OpenAI chat client: {Endpoint}, {Deployment}",
-            endpoint, deploymentName);
-
-        // Use Semantic Kernel's Azure OpenAI connector
-        var kernel = Kernel.CreateBuilder()
-            .AddAzureOpenAIChatCompletion(
-                deploymentName: deploymentName,
-                endpoint: endpoint,
-                apiKey: apiKey)
-            .Build();
-
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        return chatService.AsChatClient();
-    }
-
-    /// <summary>
-    /// Create an OpenAI chat client.
-    /// </summary>
-    private IChatClient CreateOpenAIChatClient(
-        string apiKey,
-        CopilotStartupOptions? options)
-    {
-        var model = appConfig.AiService?.OpenAI?.Model ?? "gpt-4";
-
-        logger.LogInformation("Creating OpenAI chat client: {Model}", model);
-
-        // Use Semantic Kernel's OpenAI connector
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(
-                modelId: model,
-                apiKey: apiKey)
-            .Build();
-
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
-        return chatService.AsChatClient();
+        return sessionConfig;
     }
 
     /// <inheritdoc/>
@@ -309,11 +396,6 @@ public class CopilotService : ICopilotService
         if (isRunning)
         {
             await StopAsync();
-        }
-
-        if (chatClient is IDisposable disposable)
-        {
-            disposable.Dispose();
         }
 
         GC.SuppressFinalize(this);

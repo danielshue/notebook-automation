@@ -46,6 +46,7 @@
 This document outlines the technical implementation plan for integrating the GitHub Copilot SDK into the Notebook Automation CLI. The implementation will be done in phases, with each phase delivering incremental value while maintaining backward compatibility.
 
 ### Goals
+
 1. Add Copilot SDK as a NuGet dependency
 2. Create abstraction layer for testability
 3. Implement chat mode as default when no args provided
@@ -58,11 +59,11 @@ This document outlines the technical implementation plan for integrating the Git
 
 ### Required Dependencies
 
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-| `GitHub.Copilot.SDK` | Latest | Core SDK for Copilot integration |
-| `Microsoft.Extensions.AI` | Latest | AI function factory for tool definitions |
-| `Spectre.Console` | Existing | Enhanced terminal UI for chat mode |
+| Dependency                | Version  | Purpose                                  |
+| ------------------------- | -------- | ---------------------------------------- |
+| `GitHub.Copilot.SDK`      | Latest   | Core SDK for Copilot integration         |
+| `Microsoft.Extensions.AI` | Latest   | AI function factory for tool definitions |
+| `Spectre.Console`         | Existing | Enhanced terminal UI for chat mode       |
 
 ### Environment Requirements
 
@@ -197,7 +198,7 @@ User Input                Processing                      Output
 
 ## Implementation Phases
 
-### Phase 1: Foundation
+### Phase 1: Foundation ✅ COMPLETE
 
 **Goal:** Add SDK dependency, create abstraction layer, detect Copilot availability
 
@@ -205,51 +206,58 @@ User Input                Processing                      Output
 
 #### Tasks
 
-- [ ] **1.1** Add NuGet packages
+- [x] **1.1** Add NuGet packages
+
   ```bash
-  dotnet add package GitHub.Copilot.SDK
   dotnet add package Microsoft.Extensions.AI
+  dotnet add package Microsoft.SemanticKernel
   ```
 
-- [ ] **1.2** Create `ICopilotService` interface
+- [x] **1.2** Create `ICopilotService` interface
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/ICopilotService.cs
   ```
 
-- [ ] **1.3** Create `CopilotService` implementation
+- [x] **1.3** Create `CopilotService` implementation
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/CopilotService.cs
   ```
 
-- [ ] **1.4** Create `CopilotAvailabilityChecker` utility
+- [x] **1.4** Create `CopilotAvailabilityChecker` utility
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/CopilotAvailabilityChecker.cs
   ```
 
-- [ ] **1.5** Register services in DI container
+- [x] **1.5** Register services in DI container
+
   ```
-  src/c-sharp/NotebookAutomation.Cli/Startup/ServiceRegistration.cs
+  src/c-sharp/NotebookAutomation.Cli/Startup/CopilotServiceRegistration.cs
   ```
 
-- [ ] **1.6** Add Copilot configuration section to AppConfig
+- [x] **1.6** Add Copilot configuration section to AppConfig
+
   ```
   src/c-sharp/NotebookAutomation.Core/Configuration/CopilotConfig.cs
   ```
 
-- [ ] **1.7** Write unit tests for availability checker
+- [x] **1.7** Write unit tests for availability checker
   ```
-  tests/Cli/Services/Copilot/CopilotAvailabilityCheckerTests.cs
+  src/c-sharp/NotebookAutomation.Tests/Cli/Services/Copilot/CopilotAvailabilityCheckerTests.cs
   ```
 
 #### Deliverables
-- ICopilotService interface
-- CopilotService implementation (basic)
-- Availability detection
-- Unit tests
+
+- ✅ ICopilotService interface
+- ✅ CopilotService implementation with live AI (Azure OpenAI/OpenAI via Semantic Kernel)
+- ✅ Availability detection (API key based)
+- ✅ Unit tests
 
 ---
 
-### Phase 2: Chat Mode Core
+### Phase 2: Chat Mode Core ✅ COMPLETE
 
 **Goal:** Implement interactive chat mode when no args provided
 
@@ -257,64 +265,73 @@ User Input                Processing                      Output
 
 #### Tasks
 
-- [ ] **2.1** Create `ChatModeUI` class using Spectre.Console
+- [x] **2.1** Create `ChatModeUI` class using Spectre.Console
+
   ```
   src/c-sharp/NotebookAutomation.Cli/UI/ChatModeUI.cs
   ```
 
-- [ ] **2.2** Implement welcome banner with ASCII art
+- [x] **2.2** Implement welcome banner with ASCII art
+
   ```
   src/c-sharp/NotebookAutomation.Cli/UI/WelcomeBanner.cs
   ```
 
-- [ ] **2.3** Create chat input loop with readline support
+- [x] **2.3** Create chat input loop with readline support
+
   ```
-  src/c-sharp/NotebookAutomation.Cli/UI/ChatInputHandler.cs
+  Integrated in ChatModeUI.cs (RunChatLoopAsync method)
   ```
 
-- [ ] **2.4** Implement streaming response display
+- [x] **2.4** Implement streaming response display
+
   ```
-  src/c-sharp/NotebookAutomation.Cli/UI/StreamingResponseRenderer.cs
+  Integrated in ChatModeUI.cs (DisplayStreamingResponseAsync method)
   ```
 
-- [ ] **2.5** Modify `Program.cs` to detect no-args and enter chat mode
+- [x] **2.5** Modify `Program.cs` to detect no-args and enter chat mode
+
   ```csharp
-  if (args.Length == 0)
+  if (isNoArgs && appConfig.Copilot.Enabled && appConfig.Copilot.AutoChatMode)
   {
       var copilotService = serviceProvider.GetService<ICopilotService>();
-      if (await copilotService.IsAvailableAsync())
+      var availability = await copilotService.CheckAvailabilityAsync();
+      if (availability.IsAvailable)
       {
-          return await copilotService.StartInteractiveChatAsync();
+          return await chatUI.RunAsync(chatOptions);
       }
       // Fallback to help display
   }
   ```
 
-- [ ] **2.6** Implement built-in commands (help, exit, clear, history)
+- [x] **2.6** Implement built-in commands (help, exit, clear, history)
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/ChatBuiltInCommands.cs
   ```
 
-- [ ] **2.7** Add `CopilotCommands` for explicit `na chat` and `na ask`
+- [x] **2.7** Add `CopilotCommands` for explicit `na chat` and `na ask`
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Commands/CopilotCommands.cs
   ```
 
-- [ ] **2.8** Write integration tests for chat mode
+- [x] **2.8** Write unit tests for chat components
   ```
-  tests/Cli/Integration/ChatModeTests.cs
+  src/c-sharp/NotebookAutomation.Tests/Cli/Services/Copilot/CopilotServiceTests.cs
   ```
 
 #### Deliverables
-- Interactive chat mode
-- Welcome banner
-- Streaming responses
-- `na chat` and `na ask` commands
-- Built-in commands (help, exit, clear, history)
+
+- ✅ Interactive chat mode with streaming responses
+- ✅ Welcome banner with high contrast support
+- ✅ Streaming responses via Microsoft.Extensions.AI
+- ✅ `na chat` and `na ask` commands with full options
+- ✅ Built-in commands (help, exit, clear, history, tools, status)
 
 ---
 
-### Phase 3: CLI Command Integration
+### Phase 3: CLI Command Integration ✅ COMPLETE
 
 **Goal:** Expose all existing CLI commands as Copilot-callable tools
 
@@ -322,74 +339,90 @@ User Input                Processing                      Output
 
 #### Tasks
 
-- [ ] **3.1** Create `NotebookTools` class for tool registration
+- [x] **3.1** Create `NotebookTools` class for tool registration
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/NotebookTools.cs
   ```
 
-- [ ] **3.2** Implement Vault tools
+- [x] **3.2** Implement Vault tools (4 tools)
+
   ```csharp
-  AIFunctionFactory.Create(GenerateIndexAsync, "vault_generate_index", "Generate index files");
-  AIFunctionFactory.Create(EnsureMetadataAsync, "vault_ensure_metadata", "Ensure metadata consistency");
-  AIFunctionFactory.Create(CleanIndexAsync, "vault_clean_index", "Remove index files");
-  AIFunctionFactory.Create(VaultSyncAsync, "vault_sync", "Sync with OneDrive");
+  AIFunctionFactory.Create(..., "vault_generate_index", "Generate index files");
+  AIFunctionFactory.Create(..., "vault_ensure_metadata", "Ensure metadata consistency");
+  AIFunctionFactory.Create(..., "vault_clean_index", "Remove index files");
+  AIFunctionFactory.Create(..., "vault_sync", "Sync with OneDrive");
   ```
 
-- [ ] **3.3** Implement Tag tools
+- [x] **3.3** Implement Tag tools (7 tools)
+
   ```csharp
-  AIFunctionFactory.Create(AddNestedTagsAsync, "tag_add_nested", "Add nested tags");
-  AIFunctionFactory.Create(ConsolidateTagsAsync, "tag_consolidate", "Consolidate tags");
-  AIFunctionFactory.Create(UpdateFrontmatterAsync, "tag_update_frontmatter", "Update frontmatter");
-  AIFunctionFactory.Create(DiagnoseYamlAsync, "tag_diagnose_yaml", "Diagnose YAML issues");
+  AIFunctionFactory.Create(..., "tag_add_nested", "Add nested tags");
+  AIFunctionFactory.Create(..., "tag_consolidate", "Consolidate tags");
+  AIFunctionFactory.Create(..., "tag_restructure", "Restructure tags");
+  AIFunctionFactory.Create(..., "tag_update_frontmatter", "Update frontmatter");
+  AIFunctionFactory.Create(..., "tag_diagnose_yaml", "Diagnose YAML issues");
+  AIFunctionFactory.Create(..., "tag_metadata_check", "Check metadata consistency");
+  AIFunctionFactory.Create(..., "tag_clean_index", "Remove tag info from index");
   ```
 
-- [ ] **3.4** Implement PDF tools
+- [x] **3.4** Implement PDF tools (1 tool)
+
   ```csharp
-  AIFunctionFactory.Create(ConvertPdfAsync, "pdf_convert", "Convert PDF to notes");
+  AIFunctionFactory.Create(..., "pdf_convert", "Convert PDF to notes");
   ```
 
-- [ ] **3.5** Implement Video tools
+- [x] **3.5** Implement Video tools (2 tools)
+
   ```csharp
-  AIFunctionFactory.Create(CreateVideoNotesAsync, "video_create_notes", "Create notes from video");
-  AIFunctionFactory.Create(ConsolidateTranscriptsAsync, "video_consolidate", "Consolidate transcripts");
+  AIFunctionFactory.Create(..., "video_create_notes", "Create notes from video");
+  AIFunctionFactory.Create(..., "video_consolidate_transcripts", "Consolidate transcripts");
   ```
 
-- [ ] **3.6** Implement Markdown tools
+- [x] **3.6** Implement Markdown tools (1 tool)
+
   ```csharp
-  AIFunctionFactory.Create(GenerateMarkdownAsync, "markdown_generate", "Convert to markdown");
+  AIFunctionFactory.Create(..., "markdown_generate", "Convert to markdown");
   ```
 
-- [ ] **3.7** Implement Config tools
+- [x] **3.7** Implement Config tools (5 tools)
+
   ```csharp
-  AIFunctionFactory.Create(ViewConfigAsync, "config_view", "View configuration");
-  AIFunctionFactory.Create(UpdateConfigAsync, "config_update", "Update configuration");
-  AIFunctionFactory.Create(ValidateConfigAsync, "config_validate", "Validate configuration");
+  AIFunctionFactory.Create(..., "config_view", "View configuration");
+  AIFunctionFactory.Create(..., "config_update", "Update configuration");
+  AIFunctionFactory.Create(..., "config_validate", "Validate configuration");
+  AIFunctionFactory.Create(..., "config_list_keys", "List config keys");
+  AIFunctionFactory.Create(..., "config_secrets_status", "Check secrets status");
   ```
 
-- [ ] **3.8** Implement OneDrive tools
+- [x] **3.8** Implement OneDrive tools (1 tool)
+
   ```csharp
-  AIFunctionFactory.Create(RefreshTokenAsync, "onedrive_refresh_token", "Refresh OneDrive token");
+  AIFunctionFactory.Create(..., "onedrive_refresh_token", "Refresh OneDrive token");
   ```
 
-- [ ] **3.9** Create system message with tool context
+- [x] **3.9** Create system message with tool context
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/SystemMessageBuilder.cs
   ```
 
-- [ ] **3.10** Write tests for each tool
+- [x] **3.10** Write tests for each tool
   ```
-  tests/Cli/Services/Copilot/NotebookToolsTests.cs
+  src/c-sharp/NotebookAutomation.Tests/Cli/Services/Copilot/NotebookToolsTests.cs
+  src/c-sharp/NotebookAutomation.Tests/Cli/Services/Copilot/SystemMessageBuilderTests.cs
   ```
 
 #### Deliverables
-- All CLI commands available as tools
-- System message with context
-- Tool execution with proper error handling
-- Unit tests for tools
+
+- ✅ 21 CLI commands available as AI tools across 7 categories
+- ✅ System message builder with dynamic tool context
+- ✅ Tool execution with proper error handling
+- ✅ Unit tests for tools and system message builder
 
 ---
 
-### Phase 4: Session Management
+### Phase 4: Session Management ✅ COMPLETE
 
 **Goal:** Implement session persistence, first-run experience, and Git detection
 
@@ -397,61 +430,73 @@ User Input                Processing                      Output
 
 #### Tasks
 
-- [ ] **4.1** Create `SessionManager` class
+- [x] **4.1** Create `SessionManager` class
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/SessionManager.cs
+  src/c-sharp/NotebookAutomation.Cli/Services/Copilot/ISessionManager.cs
   ```
 
-- [ ] **4.2** Implement session save/load functionality
+- [x] **4.2** Implement session save/load functionality
+
   ```csharp
-  public async Task SaveSessionAsync(string name);
-  public async Task<CopilotSession> LoadSessionAsync(string name);
-  public async Task<IReadOnlyList<SessionMetadata>> ListSessionsAsync();
-  public async Task PurgeSessionsAsync(TimeSpan olderThan);
+  public async Task SaveSessionAsync(CopilotSessionMetadata session);
+  public async Task<CopilotSessionMetadata?> LoadSessionAsync(string sessionId);
+  public async Task<IReadOnlyList<CopilotSessionMetadata>> ListSessionsAsync();
+  public async Task DeleteSessionAsync(string sessionId);
+  public async Task PurgeOldSessionsAsync(int retentionDays);
   ```
 
-- [ ] **4.3** Create `FirstRunExperience` class
+- [x] **4.3** Create `FirstRunExperience` class
+
   ```
   src/c-sharp/NotebookAutomation.Cli/UI/FirstRunExperience.cs
   ```
 
-- [ ] **4.4** Implement Git repository detection
-  ```csharp
-  public async Task<bool> IsGitRepositoryAsync(string path);
-  public async Task<bool> PromptInitGitAsync();
+- [x] **4.4** Implement Git repository detection
+
+  ```
+  src/c-sharp/NotebookAutomation.Cli/Services/Copilot/GitService.cs
+  src/c-sharp/NotebookAutomation.Cli/Services/Copilot/IGitService.cs
   ```
 
-- [ ] **4.5** Implement session retention preference prompt
-  ```csharp
-  public async Task<SessionRetention> PromptSessionRetentionAsync();
+- [x] **4.5** Implement session retention preference prompt
+
+  ```
+  Integrated in FirstRunExperience.cs (PromptSessionRetentionAsync method)
   ```
 
-- [ ] **4.6** Add `--resume` and `--session` options to `na chat`
-  ```csharp
-  var resumeOption = new Option<bool>("--resume", "Resume last session");
-  var sessionOption = new Option<string>("--session", "Resume specific session");
+- [x] **4.6** Add `--resume` and `--session` options to `na chat`
+
+  ```
+  src/c-sharp/NotebookAutomation.Cli/Commands/CopilotCommands.cs
   ```
 
-- [ ] **4.7** Implement session purge command
-  ```csharp
-  chatCommand.AddCommand(new Command("purge", "Purge old sessions"));
+- [x] **4.7** Implement session purge command
+
+  ```
+  Integrated in ChatBuiltInCommands.cs (/sessions purge command)
   ```
 
-- [ ] **4.8** Store first-run preferences in user settings
+- [x] **4.8** Store first-run preferences in user settings
+
   ```
-  src/c-sharp/NotebookAutomation.Cli/Services/Copilot/UserPreferences.cs
+  src/c-sharp/NotebookAutomation.Cli/Services/Copilot/UserPreferencesService.cs
+  src/c-sharp/NotebookAutomation.Cli/Services/Copilot/IUserPreferencesService.cs
   ```
 
-- [ ] **4.9** Write tests for session management
+- [x] **4.9** Write tests for session management
   ```
-  tests/Cli/Services/Copilot/SessionManagerTests.cs
+  src/c-sharp/NotebookAutomation.Tests/Cli/Services/Copilot/SessionManagerTests.cs
   ```
 
 #### Deliverables
-- Session save/load/list/purge
-- First-run experience (Git detection, retention preference)
-- `--resume` and `--session` options
-- User preferences storage
+
+- ✅ Session save/load/list/delete/purge with file-based persistence
+- ✅ First-run experience with Git detection and retention preferences
+- ✅ `--resume` and `--session` options for `na chat`
+- ✅ User preferences storage (~/.notebookautomation/preferences.json)
+- ✅ Session storage (~/.notebookautomation/sessions/)
 
 ---
 
@@ -463,58 +508,68 @@ User Input                Processing                      Output
 
 #### Tasks
 
-- [ ] **5.1** Implement keyboard shortcuts handler
+- [x] **5.1** Implement keyboard shortcuts handler
+
   ```
   src/c-sharp/NotebookAutomation.Cli/UI/KeyboardHandler.cs
   ```
 
-- [ ] **5.2** Implement multi-line input support
+- [x] **5.2** Implement multi-line input support
+
   ```
   src/c-sharp/NotebookAutomation.Cli/UI/MultiLineInputHandler.cs
   ```
 
-- [ ] **5.3** Implement file attachment syntax (@file)
+- [x] **5.3** Implement file attachment syntax (@file)
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/FileAttachmentParser.cs
   ```
 
-- [ ] **5.4** Add accessibility options (high contrast, screen reader)
+- [x] **5.4** Add accessibility options (high contrast, screen reader)
+
   ```
   src/c-sharp/NotebookAutomation.Cli/UI/AccessibilityOptions.cs
   ```
 
-- [ ] **5.5** Implement session logging
+- [x] **5.5** Implement session logging
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/SessionLogger.cs
   ```
 
-- [ ] **5.6** Add offline mode detection and handling
+- [x] **5.6** Add offline mode detection and handling
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/NetworkHandler.cs
   ```
 
-- [ ] **5.7** Implement rate limiting handler
+- [x] **5.7** Implement rate limiting handler
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Services/Copilot/RateLimitHandler.cs
   ```
 
-- [ ] **5.8** Add `na chat --help` output
+- [x] **5.8** Add `na chat --help` output
+
   ```
   src/c-sharp/NotebookAutomation.Cli/Commands/CopilotCommands.cs
   ```
 
 - [ ] **5.9** Final integration testing
+
   ```
   tests/Cli/Integration/CopilotIntegrationTests.cs
   ```
 
-- [ ] **5.10** Update documentation
+- [x] **5.10** Update documentation
   ```
   docs/README.md
   docs/chat-mode.md
   ```
 
 #### Deliverables
+
 - Keyboard shortcuts
 - Multi-line input
 - File attachments
@@ -575,38 +630,38 @@ public interface ICopilotService : IAsyncDisposable
     /// Check if Copilot CLI is available and authenticated.
     /// </summary>
     Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Start the Copilot client.
     /// </summary>
     Task StartAsync(CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Stop the Copilot client.
     /// </summary>
     Task StopAsync(CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Create a new conversation session.
     /// </summary>
     Task<ICopilotSession> CreateSessionAsync(
         SessionConfig? config = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Resume an existing session.
     /// </summary>
     Task<ICopilotSession> ResumeSessionAsync(
         string sessionId,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Start interactive chat mode.
     /// </summary>
     Task<int> StartInteractiveChatAsync(
         ChatModeOptions? options = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Send a one-shot message and return the response.
     /// </summary>
@@ -619,18 +674,18 @@ public interface ICopilotService : IAsyncDisposable
 public interface ICopilotSession : IAsyncDisposable
 {
     string SessionId { get; }
-    
+
     Task<string> SendAsync(
         string prompt,
         CancellationToken cancellationToken = default);
-    
+
     Task<string> SendWithAttachmentsAsync(
         string prompt,
         IEnumerable<FileAttachment> attachments,
         CancellationToken cancellationToken = default);
-    
+
     IDisposable OnEvent(Action<SessionEvent> handler);
-    
+
     Task AbortAsync(CancellationToken cancellationToken = default);
 }
 ```
@@ -660,7 +715,7 @@ public class NotebookTools(
                 },
                 "vault_generate_index",
                 "Generate index files for directories in the vault"),
-            
+
             AIFunctionFactory.Create(
                 async ([Description("Path within the vault")] string? path) =>
                 {
@@ -669,7 +724,7 @@ public class NotebookTools(
                 },
                 "vault_ensure_metadata",
                 "Ensure metadata consistency across markdown files"),
-            
+
             // Tag tools
             AIFunctionFactory.Create(
                 async (
@@ -682,7 +737,7 @@ public class NotebookTools(
                 },
                 "tag_update_frontmatter",
                 "Update or add a frontmatter key-value pair in markdown files"),
-            
+
             // PDF tools
             AIFunctionFactory.Create(
                 async (
@@ -695,7 +750,7 @@ public class NotebookTools(
                 },
                 "pdf_convert",
                 "Convert PDF files to markdown notes"),
-            
+
             // ... additional tools
         ];
     }
@@ -709,7 +764,7 @@ public class CopilotService : ICopilotService
 {
     private readonly CopilotClient _client;
     private CopilotSession? _session;
-    
+
     public async Task<int> StartInteractiveChatAsync(
         ChatModeOptions? options,
         CancellationToken cancellationToken)
@@ -720,9 +775,9 @@ public class CopilotService : ICopilotService
             Tools = _notebookTools.GetTools(),
             SystemMessage = _systemMessageBuilder.Build()
         }, cancellationToken);
-        
+
         var done = new TaskCompletionSource();
-        
+
         session.OnEvent(evt =>
         {
             switch (evt)
@@ -730,47 +785,47 @@ public class CopilotService : ICopilotService
                 case AssistantMessageDeltaEvent delta:
                     _ui.WriteStreaming(delta.Data.DeltaContent);
                     break;
-                    
+
                 case AssistantMessageEvent msg:
                     _ui.WriteComplete(msg.Data.Content);
                     break;
-                    
+
                 case ToolExecutionStartEvent toolStart:
                     _ui.WriteToolStart(toolStart.Data.ToolName);
                     break;
-                    
+
                 case ToolExecutionCompleteEvent toolComplete:
                     _ui.WriteToolComplete(toolComplete.Data.Result);
                     break;
-                    
+
                 case SessionIdleEvent:
                     done.SetResult();
                     break;
-                    
+
                 case SessionErrorEvent error:
                     _ui.WriteError(error.Data.Message);
                     done.SetException(new CopilotException(error.Data.Message));
                     break;
             }
         });
-        
+
         // Chat loop
         while (!cancellationToken.IsCancellationRequested)
         {
             var input = await _ui.ReadInputAsync(cancellationToken);
-            
+
             if (_builtInCommands.TryHandle(input, out var result))
             {
                 if (result == BuiltInCommandResult.Exit)
                     break;
                 continue;
             }
-            
+
             done = new TaskCompletionSource();
             await session.SendAsync(input, cancellationToken);
             await done.Task;
         }
-        
+
         return 0;
     }
 }
@@ -782,23 +837,23 @@ public class CopilotService : ICopilotService
 
 ### Unit Tests
 
-| Component | Test Coverage |
-|-----------|--------------|
+| Component                    | Test Coverage              |
+| ---------------------------- | -------------------------- |
 | `CopilotAvailabilityChecker` | CLI detection, auth status |
-| `NotebookTools` | Each tool function |
-| `SessionManager` | Save, load, list, purge |
-| `ChatBuiltInCommands` | Command parsing, execution |
-| `FileAttachmentParser` | @file syntax parsing |
-| `SystemMessageBuilder` | Message construction |
+| `NotebookTools`              | Each tool function         |
+| `SessionManager`             | Save, load, list, purge    |
+| `ChatBuiltInCommands`        | Command parsing, execution |
+| `FileAttachmentParser`       | @file syntax parsing       |
+| `SystemMessageBuilder`       | Message construction       |
 
 ### Integration Tests
 
-| Scenario | Description |
-|----------|-------------|
-| Chat mode entry | No args → chat mode activation |
-| Tool invocation | Natural language → tool execution |
-| Session persistence | Save → exit → resume |
-| Error handling | Network failure, rate limiting |
+| Scenario            | Description                       |
+| ------------------- | --------------------------------- |
+| Chat mode entry     | No args → chat mode activation    |
+| Tool invocation     | Natural language → tool execution |
+| Session persistence | Save → exit → resume              |
+| Error handling      | Network failure, rate limiting    |
 
 ### Mock Strategy
 
@@ -807,7 +862,7 @@ public class MockCopilotService : ICopilotService
 {
     public Queue<string> QueuedResponses { get; } = new();
     public List<string> ReceivedPrompts { get; } = new();
-    
+
     public Task<string> AskAsync(string prompt, AskOptions? options, CancellationToken ct)
     {
         ReceivedPrompts.Add(prompt);
@@ -834,12 +889,12 @@ public class MockCopilotService : ICopilotService
 if (args.Length == 0)
 {
     var copilot = serviceProvider.GetService<ICopilotService>();
-    
+
     if (copilot != null && await copilot.IsAvailableAsync())
     {
         return await copilot.StartInteractiveChatAsync();
     }
-    
+
     // Fallback: show traditional help
     var helpService = serviceProvider.GetRequiredService<HelpDisplayService>();
     await helpService.DisplayCustomHelpAsync(rootCommand, configPath, isDebugMode, args);
@@ -851,26 +906,26 @@ if (args.Length == 0)
 
 ## Risks & Mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Copilot CLI not installed | Medium | High | Graceful fallback to traditional CLI |
-| Rate limiting | Medium | Medium | Implement backoff, show quota warnings |
-| SDK breaking changes | Low | High | Pin SDK version, abstract behind interface |
-| Network failures | Medium | Medium | Offline mode, retry logic |
-| Large file handling | Low | Medium | Chunking, progress indicators |
+| Risk                      | Likelihood | Impact | Mitigation                                 |
+| ------------------------- | ---------- | ------ | ------------------------------------------ |
+| Copilot CLI not installed | Medium     | High   | Graceful fallback to traditional CLI       |
+| Rate limiting             | Medium     | Medium | Implement backoff, show quota warnings     |
+| SDK breaking changes      | Low        | High   | Pin SDK version, abstract behind interface |
+| Network failures          | Medium     | Medium | Offline mode, retry logic                  |
+| Large file handling       | Low        | Medium | Chunking, progress indicators              |
 
 ---
 
 ## Timeline Estimate
 
-| Phase | Duration | Dependencies |
-|-------|----------|--------------|
-| Phase 1: Foundation | 1-2 days | None |
-| Phase 2: Chat Mode Core | 2-3 days | Phase 1 |
-| Phase 3: CLI Integration | 3-4 days | Phase 2 |
-| Phase 4: Session Management | 2-3 days | Phase 3 |
-| Phase 5: Advanced Features | 2-3 days | Phase 4 |
-| **Total** | **10-15 days** | |
+| Phase                       | Duration       | Dependencies |
+| --------------------------- | -------------- | ------------ |
+| Phase 1: Foundation         | 1-2 days       | None         |
+| Phase 2: Chat Mode Core     | 2-3 days       | Phase 1      |
+| Phase 3: CLI Integration    | 3-4 days       | Phase 2      |
+| Phase 4: Session Management | 2-3 days       | Phase 3      |
+| Phase 5: Advanced Features  | 2-3 days       | Phase 4      |
+| **Total**                   | **10-15 days** |              |
 
 ---
 
@@ -884,15 +939,19 @@ The following GitHub issues should be created to track implementation:
 # [Epic] GitHub Copilot SDK Integration
 
 ## Overview
+
 Integrate GitHub Copilot SDK to provide intelligent chat mode for Notebook Automation CLI.
 
 ## Feature Specification
+
 See: docs/features/copilot-sdk-integration.md
 
 ## Implementation Plan
+
 See: docs/features/copilot-sdk-implementation-plan.md
 
 ## Child Issues
+
 - [ ] #XXX Phase 1: Foundation
 - [ ] #XXX Phase 2: Chat Mode Core
 - [ ] #XXX Phase 3: CLI Command Integration
@@ -900,6 +959,7 @@ See: docs/features/copilot-sdk-implementation-plan.md
 - [ ] #XXX Phase 5: Advanced Features
 
 ## Labels
+
 - enhancement
 - copilot-sdk
 - epic
@@ -911,21 +971,26 @@ See: docs/features/copilot-sdk-implementation-plan.md
 # [Phase X] <Phase Name>
 
 ## Goal
+
 <Goal from implementation plan>
 
 ## Tasks
+
 - [ ] Task 1
 - [ ] Task 2
 - ...
 
 ## Acceptance Criteria
+
 - [ ] Criteria 1
 - [ ] Criteria 2
 
 ## Dependencies
+
 - Depends on: #XXX
 
 ## Labels
+
 - enhancement
 - copilot-sdk
 - phase-X
@@ -944,7 +1009,7 @@ See: docs/features/copilot-sdk-implementation-plan.md
 ```xml
 <ItemGroup>
   <!-- Existing packages -->
-  
+
   <!-- New Copilot SDK packages -->
   <PackageReference Include="GitHub.Copilot.SDK" Version="1.*" />
   <PackageReference Include="Microsoft.Extensions.AI" Version="9.*" />
@@ -952,6 +1017,7 @@ See: docs/features/copilot-sdk-implementation-plan.md
 ```
 
 **Verification:**
+
 ```bash
 cd src/c-sharp/NotebookAutomation.Cli
 dotnet add package GitHub.Copilot.SDK
@@ -981,7 +1047,7 @@ public interface ICopilotService : IAsyncDisposable
     /// Gets a value indicating whether the Copilot client is currently running.
     /// </summary>
     bool IsRunning { get; }
-    
+
     /// <summary>
     /// Check if Copilot CLI is available and authenticated.
     /// </summary>
@@ -989,7 +1055,7 @@ public interface ICopilotService : IAsyncDisposable
     /// <returns>True if Copilot is available and ready to use.</returns>
     Task<CopilotAvailabilityResult> CheckAvailabilityAsync(
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Start the Copilot client and establish connection.
     /// </summary>
@@ -998,13 +1064,13 @@ public interface ICopilotService : IAsyncDisposable
     Task StartAsync(
         CopilotStartupOptions? options = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Stop the Copilot client gracefully.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task StopAsync(CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Create a new conversation session with optional configuration.
     /// </summary>
@@ -1014,7 +1080,7 @@ public interface ICopilotService : IAsyncDisposable
     Task<ICopilotSession> CreateSessionAsync(
         CopilotSessionConfig? config = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Resume an existing session by ID.
     /// </summary>
@@ -1026,7 +1092,7 @@ public interface ICopilotService : IAsyncDisposable
         string sessionId,
         CopilotSessionConfig? config = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// List all available sessions.
     /// </summary>
@@ -1034,7 +1100,7 @@ public interface ICopilotService : IAsyncDisposable
     /// <returns>List of session metadata.</returns>
     Task<IReadOnlyList<CopilotSessionMetadata>> ListSessionsAsync(
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Delete a session by ID.
     /// </summary>
@@ -1043,7 +1109,7 @@ public interface ICopilotService : IAsyncDisposable
     Task DeleteSessionAsync(
         string sessionId,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Start interactive chat mode with the full UI experience.
     /// </summary>
@@ -1053,7 +1119,7 @@ public interface ICopilotService : IAsyncDisposable
     Task<int> StartInteractiveChatAsync(
         ChatModeOptions? options = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Send a one-shot question and get a response (no interactive session).
     /// </summary>
@@ -1065,7 +1131,7 @@ public interface ICopilotService : IAsyncDisposable
         string prompt,
         AskOptions? options = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Get available models from the Copilot CLI.
     /// </summary>
@@ -1106,17 +1172,17 @@ public record CopilotStartupOptions
     /// Path to Copilot CLI executable. Defaults to "copilot" from PATH.
     /// </summary>
     public string? CliPath { get; init; }
-    
+
     /// <summary>
     /// Working directory for the CLI process.
     /// </summary>
     public string? WorkingDirectory { get; init; }
-    
+
     /// <summary>
     /// Log level for SDK logging.
     /// </summary>
     public string LogLevel { get; init; } = "info";
-    
+
     /// <summary>
     /// Whether to auto-restart on crash.
     /// </summary>
@@ -1132,33 +1198,33 @@ public record CopilotSessionConfig
     /// Custom session ID. If null, one will be generated.
     /// </summary>
     public string? SessionId { get; init; }
-    
+
     /// <summary>
     /// Model to use (e.g., "gpt-5", "claude-sonnet-4.5").
     /// If null, uses Copilot CLI default.
     /// </summary>
     public string? Model { get; init; }
-    
+
     /// <summary>
     /// Enable streaming responses.
     /// </summary>
     public bool Streaming { get; init; } = true;
-    
+
     /// <summary>
     /// Custom tools to make available to the model.
     /// </summary>
     public IReadOnlyList<object>? Tools { get; init; }
-    
+
     /// <summary>
     /// System message configuration.
     /// </summary>
     public SystemMessageConfig? SystemMessage { get; init; }
-    
+
     /// <summary>
     /// List of tool names to allow. If null, all tools are allowed.
     /// </summary>
     public IReadOnlyList<string>? AvailableTools { get; init; }
-    
+
     /// <summary>
     /// List of tool names to exclude.
     /// </summary>
@@ -1174,7 +1240,7 @@ public record SystemMessageConfig
     /// How to apply the system message.
     /// </summary>
     public SystemMessageMode Mode { get; init; } = SystemMessageMode.Append;
-    
+
     /// <summary>
     /// The system message content.
     /// </summary>
@@ -1190,7 +1256,7 @@ public enum SystemMessageMode
     /// Append to the default system message.
     /// </summary>
     Append,
-    
+
     /// <summary>
     /// Replace the default system message entirely.
     /// </summary>
@@ -1217,27 +1283,27 @@ public record ChatModeOptions
     /// Resume the last session.
     /// </summary>
     public bool Resume { get; init; }
-    
+
     /// <summary>
     /// Resume a specific session by name or ID.
     /// </summary>
     public string? SessionName { get; init; }
-    
+
     /// <summary>
     /// Model to use for this session.
     /// </summary>
     public string? Model { get; init; }
-    
+
     /// <summary>
     /// Enable debug logging.
     /// </summary>
     public bool Debug { get; init; }
-    
+
     /// <summary>
     /// Enable high contrast mode.
     /// </summary>
     public bool HighContrast { get; init; }
-    
+
     /// <summary>
     /// Skip the welcome banner.
     /// </summary>
@@ -1253,12 +1319,12 @@ public record AskOptions
     /// Model to use.
     /// </summary>
     public string? Model { get; init; }
-    
+
     /// <summary>
     /// File paths to attach as context.
     /// </summary>
     public IReadOnlyList<string>? Files { get; init; }
-    
+
     /// <summary>
     /// Path context (e.g., a folder to focus on).
     /// </summary>
@@ -1286,17 +1352,17 @@ public interface ICopilotSession : IAsyncDisposable
     /// Gets the unique session identifier.
     /// </summary>
     string SessionId { get; }
-    
+
     /// <summary>
     /// Gets the current model being used.
     /// </summary>
     string? CurrentModel { get; }
-    
+
     /// <summary>
     /// Gets whether the session is currently processing a message.
     /// </summary>
     bool IsProcessing { get; }
-    
+
     /// <summary>
     /// Send a message and wait for the complete response.
     /// </summary>
@@ -1306,7 +1372,7 @@ public interface ICopilotSession : IAsyncDisposable
     Task<CopilotResponse> SendAndWaitAsync(
         string prompt,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Send a message with file attachments.
     /// </summary>
@@ -1318,7 +1384,7 @@ public interface ICopilotSession : IAsyncDisposable
         string prompt,
         IEnumerable<FileAttachment> attachments,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Send a message and stream the response via events.
     /// </summary>
@@ -1328,20 +1394,20 @@ public interface ICopilotSession : IAsyncDisposable
     Task<string> SendAsync(
         string prompt,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Subscribe to session events (streaming, tool execution, etc.).
     /// </summary>
     /// <param name="handler">Event handler.</param>
     /// <returns>Disposable to unsubscribe.</returns>
     IDisposable OnEvent(Action<CopilotSessionEvent> handler);
-    
+
     /// <summary>
     /// Abort the currently processing message.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task AbortAsync(CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Get all messages in this session.
     /// </summary>
@@ -1383,43 +1449,43 @@ public abstract record CopilotSessionEvent(string Type);
 /// <summary>
 /// Streaming text delta event.
 /// </summary>
-public record AssistantMessageDeltaEvent(string DeltaContent) 
+public record AssistantMessageDeltaEvent(string DeltaContent)
     : CopilotSessionEvent("assistant_message_delta");
 
 /// <summary>
 /// Complete assistant message event.
 /// </summary>
-public record AssistantMessageCompleteEvent(string Content, string MessageId) 
+public record AssistantMessageCompleteEvent(string Content, string MessageId)
     : CopilotSessionEvent("assistant_message");
 
 /// <summary>
 /// Tool execution started event.
 /// </summary>
-public record ToolExecutionStartEvent(string ToolName, string ToolCallId) 
+public record ToolExecutionStartEvent(string ToolName, string ToolCallId)
     : CopilotSessionEvent("tool_execution_start");
 
 /// <summary>
 /// Tool execution completed event.
 /// </summary>
-public record ToolExecutionCompleteEvent(string ToolName, string ToolCallId, string Result, bool Success) 
+public record ToolExecutionCompleteEvent(string ToolName, string ToolCallId, string Result, bool Success)
     : CopilotSessionEvent("tool_execution_complete");
 
 /// <summary>
 /// Session is idle (finished processing).
 /// </summary>
-public record SessionIdleEvent() 
+public record SessionIdleEvent()
     : CopilotSessionEvent("session_idle");
 
 /// <summary>
 /// Session error event.
 /// </summary>
-public record SessionErrorEvent(string Message, string? Code) 
+public record SessionErrorEvent(string Message, string? Code)
     : CopilotSessionEvent("session_error");
 
 /// <summary>
 /// User message added event.
 /// </summary>
-public record UserMessageEvent(string Content, string MessageId) 
+public record UserMessageEvent(string Content, string MessageId)
     : CopilotSessionEvent("user_message");
 ```
 
@@ -1444,7 +1510,7 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
     private CopilotAvailabilityResult? _cachedResult;
     private DateTime _cacheExpiry = DateTime.MinValue;
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
-    
+
     /// <summary>
     /// Check if Copilot CLI is available and authenticated.
     /// </summary>
@@ -1460,9 +1526,9 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
             logger.LogDebug("Returning cached Copilot availability result");
             return _cachedResult;
         }
-        
+
         logger.LogDebug("Checking Copilot CLI availability...");
-        
+
         // Step 1: Check if CLI is installed
         var (isInstalled, cliVersion) = await CheckCliInstalledAsync(cancellationToken);
         if (!isInstalled)
@@ -1476,9 +1542,9 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
             _cacheExpiry = DateTime.UtcNow.Add(CacheDuration);
             return _cachedResult;
         }
-        
+
         logger.LogDebug("Copilot CLI found, version: {Version}", cliVersion);
-        
+
         // Step 2: Check authentication status
         var isAuthenticated = await CheckAuthenticationAsync(cancellationToken);
         if (!isAuthenticated)
@@ -1492,9 +1558,9 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
             _cacheExpiry = DateTime.UtcNow.Add(CacheDuration);
             return _cachedResult;
         }
-        
+
         logger.LogDebug("Copilot CLI is authenticated and ready");
-        
+
         _cachedResult = new CopilotAvailabilityResult(
             IsAvailable: true,
             IsCliInstalled: true,
@@ -1504,7 +1570,7 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
         _cacheExpiry = DateTime.UtcNow.Add(CacheDuration);
         return _cachedResult;
     }
-    
+
     private async Task<(bool IsInstalled, string? Version)> CheckCliInstalledAsync(
         CancellationToken cancellationToken)
     {
@@ -1522,17 +1588,17 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
                     CreateNoWindow = true
                 }
             };
-            
+
             process.Start();
             var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
             await process.WaitForExitAsync(cancellationToken);
-            
+
             if (process.ExitCode == 0 && !string.IsNullOrWhiteSpace(output))
             {
                 var version = output.Trim();
                 return (true, version);
             }
-            
+
             return (false, null);
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or FileNotFoundException)
@@ -1541,7 +1607,7 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
             return (false, null);
         }
     }
-    
+
     private async Task<bool> CheckAuthenticationAsync(CancellationToken cancellationToken)
     {
         try
@@ -1558,16 +1624,16 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
                     CreateNoWindow = true
                 }
             };
-            
+
             process.Start();
             var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
             var error = await process.StandardError.ReadToEndAsync(cancellationToken);
             await process.WaitForExitAsync(cancellationToken);
-            
+
             // Check for authenticated status in output
             var combinedOutput = $"{output} {error}".ToLowerInvariant();
-            return process.ExitCode == 0 || 
-                   combinedOutput.Contains("authenticated") || 
+            return process.ExitCode == 0 ||
+                   combinedOutput.Contains("authenticated") ||
                    combinedOutput.Contains("logged in");
         }
         catch (Exception ex)
@@ -1576,7 +1642,7 @@ public class CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logg
             return false;
         }
     }
-    
+
     /// <summary>
     /// Clear the cached availability result.
     /// </summary>
@@ -1608,51 +1674,51 @@ public class CopilotConfig
     /// Whether Copilot chat mode is enabled.
     /// </summary>
     public bool Enabled { get; set; } = true;
-    
+
     /// <summary>
     /// Default model to use. Null means let Copilot CLI decide.
     /// </summary>
     public string? DefaultModel { get; set; }
-    
+
     /// <summary>
     /// Directory where sessions are stored.
     /// </summary>
-    public string SessionDirectory { get; set; } = 
+    public string SessionDirectory { get; set; } =
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".notebookautomation",
             "sessions");
-    
+
     /// <summary>
     /// Session retention policy: "forever", "90d", "30d", "7d".
     /// </summary>
     public string SessionRetention { get; set; } = "forever";
-    
+
     /// <summary>
     /// Enable streaming responses.
     /// </summary>
     public bool Streaming { get; set; } = true;
-    
+
     /// <summary>
     /// Preferred language for responses.
     /// </summary>
     public string Language { get; set; } = "en";
-    
+
     /// <summary>
     /// Accessibility settings.
     /// </summary>
     public CopilotAccessibilityConfig Accessibility { get; set; } = new();
-    
+
     /// <summary>
     /// Logging settings.
     /// </summary>
     public CopilotLoggingConfig Logging { get; set; } = new();
-    
+
     /// <summary>
     /// Telemetry settings.
     /// </summary>
     public CopilotTelemetryConfig Telemetry { get; set; } = new();
-    
+
     /// <summary>
     /// Parse session retention string to TimeSpan.
     /// Returns null for "forever".
@@ -1679,12 +1745,12 @@ public class CopilotAccessibilityConfig
     /// Enable high contrast mode.
     /// </summary>
     public bool HighContrast { get; set; }
-    
+
     /// <summary>
     /// Reduce motion/animations.
     /// </summary>
     public bool ReducedMotion { get; set; }
-    
+
     /// <summary>
     /// Announce progress for screen readers.
     /// </summary>
@@ -1700,7 +1766,7 @@ public class CopilotLoggingConfig
     /// Log level: "debug", "info", "warning", "error".
     /// </summary>
     public string Level { get; set; } = "info";
-    
+
     /// <summary>
     /// Log session interactions to file.
     /// </summary>
@@ -1764,27 +1830,27 @@ public static class CopilotServiceRegistration
     {
         // Availability checker (singleton for caching)
         services.AddSingleton<CopilotAvailabilityChecker>();
-        
+
         // Main Copilot service (scoped per operation)
         services.AddScoped<ICopilotService, CopilotService>();
-        
+
         // Notebook tools (custom tools for Copilot)
         services.AddScoped<NotebookTools>();
-        
+
         // Session manager
         services.AddSingleton<SessionManager>();
-        
+
         // UI components
         services.AddTransient<ChatModeUI>();
         services.AddTransient<WelcomeBanner>();
         services.AddTransient<FirstRunExperience>();
-        
+
         // Built-in commands handler
         services.AddTransient<ChatBuiltInCommands>();
-        
+
         // System message builder
         services.AddTransient<SystemMessageBuilder>();
-        
+
         return services;
     }
 }
@@ -1811,14 +1877,14 @@ namespace NotebookAutomation.Cli.UI;
 public class WelcomeBanner(CopilotConfig config)
 {
     private static readonly string AsciiArt = @"
-  _   _       _       _                 _    
+  _   _       _       _                 _
  | \ | | ___ | |_ ___| |__   ___   ___ | | __
  |  \| |/ _ \| __/ _ \ '_ \ / _ \ / _ \| |/ /
- | |\  | (_) | ||  __/ |_) | (_) | (_) |   < 
+ | |\  | (_) | ||  __/ |_) | (_) | (_) |   <
  |_| \_|\___/ \__\___|_.__/ \___/ \___/|_|\_\
-     _         _                        _   _             
-    / \  _   _| |_ ___  _ __ ___   __ _| |_(_) ___  _ __  
-   / _ \| | | | __/ _ \| '_ ` _ \ / _` | __| |/ _ \| '_ \ 
+     _         _                        _   _
+    / \  _   _| |_ ___  _ __ ___   __ _| |_(_) ___  _ __
+   / _ \| | | | __/ _ \| '_ ` _ \ / _` | __| |/ _ \| '_ \
   / ___ \ |_| | || (_) | | | | | | (_| | |_| | (_) | | | |
  /_/   \_\__,_|\__\___/|_| |_| |_|\__,_|\__|_|\___/|_| |_|
 ";
@@ -1832,24 +1898,24 @@ public class WelcomeBanner(CopilotConfig config)
         "Use '@filename.md' to reference files in your prompts",
         "Ask 'What did I learn last week?' to see your recent notes"
     ];
-    
+
     /// <summary>
     /// Display the welcome banner.
     /// </summary>
     /// <param name="showTip">Whether to show a random tip.</param>
     public void Display(bool showTip = true)
     {
-        var style = config.Accessibility.HighContrast 
-            ? new Style(Color.White, Color.Black) 
+        var style = config.Accessibility.HighContrast
+            ? new Style(Color.White, Color.Black)
             : new Style(Color.Cyan1);
-        
+
         AnsiConsole.Write(new Text(AsciiArt, style));
         AnsiConsole.WriteLine();
-        
+
         // Copyright and tagline
         AnsiConsole.MarkupLine(" [dim]© 2026 Daniel Shue | Your intelligent vault assistant[/]");
         AnsiConsole.WriteLine();
-        
+
         // Copilot box
         var panel = new Panel(
             "[bold]🤖 Powered by GitHub Copilot[/]\n\n" +
@@ -1860,10 +1926,10 @@ public class WelcomeBanner(CopilotConfig config)
             Border = BoxBorder.Rounded,
             Padding = new Padding(1, 0, 1, 0)
         };
-        
+
         AnsiConsole.Write(panel);
         AnsiConsole.WriteLine();
-        
+
         // Random tip
         if (showTip)
         {
@@ -1898,7 +1964,7 @@ public class ChatModeUI(
 {
     private readonly StringBuilder _currentResponse = new();
     private bool _isStreaming;
-    
+
     /// <summary>
     /// Display the welcome experience.
     /// </summary>
@@ -1908,7 +1974,7 @@ public class ChatModeUI(
         Console.Clear();
         welcomeBanner.Display(showTip: !isFirstRun);
     }
-    
+
     /// <summary>
     /// Read user input with prompt.
     /// </summary>
@@ -1918,11 +1984,11 @@ public class ChatModeUI(
     {
         Console.Write("\n");
         AnsiConsole.Markup("[green]You ❯[/] ");
-        
+
         var input = await Task.Run(() => Console.ReadLine() ?? string.Empty, cancellationToken);
         return input.Trim();
     }
-    
+
     /// <summary>
     /// Write streaming response delta.
     /// </summary>
@@ -1935,11 +2001,11 @@ public class ChatModeUI(
             Console.Write("\n");
             AnsiConsole.Markup("[blue]🤖[/] ");
         }
-        
+
         _currentResponse.Append(delta);
         Console.Write(delta);
     }
-    
+
     /// <summary>
     /// Complete the streaming response.
     /// </summary>
@@ -1952,7 +2018,7 @@ public class ChatModeUI(
             _currentResponse.Clear();
         }
     }
-    
+
     /// <summary>
     /// Write a complete (non-streaming) response.
     /// </summary>
@@ -1963,7 +2029,7 @@ public class ChatModeUI(
         AnsiConsole.Markup("[blue]🤖[/] ");
         Console.WriteLine(content);
     }
-    
+
     /// <summary>
     /// Write tool execution start.
     /// </summary>
@@ -1973,7 +2039,7 @@ public class ChatModeUI(
         var displayName = FormatToolName(toolName);
         AnsiConsole.MarkupLine($"\n   [dim][[Executing: {displayName}]][/]");
     }
-    
+
     /// <summary>
     /// Write tool execution result.
     /// </summary>
@@ -1983,7 +2049,7 @@ public class ChatModeUI(
     public void WriteToolResult(string toolName, string result, bool success)
     {
         var icon = success ? "[green]✓[/]" : "[red]✗[/]";
-        
+
         // Format result with indentation
         var lines = result.Split('\n');
         foreach (var line in lines)
@@ -1991,7 +2057,7 @@ public class ChatModeUI(
             AnsiConsole.MarkupLine($"   {icon} {Markup.Escape(line)}");
         }
     }
-    
+
     /// <summary>
     /// Write an error message.
     /// </summary>
@@ -2000,7 +2066,7 @@ public class ChatModeUI(
     {
         AnsiConsole.MarkupLine($"\n[red]⚠️ Error:[/] {Markup.Escape(message)}");
     }
-    
+
     /// <summary>
     /// Write a warning message.
     /// </summary>
@@ -2009,7 +2075,7 @@ public class ChatModeUI(
     {
         AnsiConsole.MarkupLine($"\n[yellow]⚠️[/] {Markup.Escape(message)}");
     }
-    
+
     /// <summary>
     /// Write an info message.
     /// </summary>
@@ -2018,7 +2084,7 @@ public class ChatModeUI(
     {
         AnsiConsole.MarkupLine($"\n[dim]{Markup.Escape(message)}[/]");
     }
-    
+
     /// <summary>
     /// Clear the screen.
     /// </summary>
@@ -2026,7 +2092,7 @@ public class ChatModeUI(
     {
         Console.Clear();
     }
-    
+
     private static string FormatToolName(string toolName)
     {
         // Convert snake_case to readable format
@@ -2065,41 +2131,41 @@ public class ChatBuiltInCommands(
     public bool TryHandle(string input, ICopilotSession? session, out BuiltInCommandResult result)
     {
         result = BuiltInCommandResult.Continue;
-        
+
         var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 0)
             return false;
-        
+
         var command = parts[0].ToLowerInvariant();
         var args = parts.Skip(1).ToArray();
-        
+
         switch (command)
         {
             case "exit":
             case "quit":
                 result = BuiltInCommandResult.Exit;
                 return true;
-                
+
             case "help":
                 HandleHelp(args);
                 return true;
-                
+
             case "clear":
                 ui.Clear();
                 return true;
-                
+
             case "history":
                 HandleHistory(session);
                 return true;
-                
+
             case "model":
                 HandleModel(args, session);
                 return true;
-                
+
             case "session":
                 HandleSession(args, session);
                 return true;
-                
+
             default:
                 // Check for ! prefix (direct CLI command)
                 if (input.StartsWith('!'))
@@ -2110,7 +2176,7 @@ public class ChatBuiltInCommands(
                 return false;
         }
     }
-    
+
     private void HandleHelp(string[] args)
     {
         if (args.Length == 0)
@@ -2122,7 +2188,7 @@ public class ChatBuiltInCommands(
             ShowTopicHelp(args[0]);
         }
     }
-    
+
     private void ShowGeneralHelp()
     {
         ui.WriteResponse(@"Here's what I can help you with:
@@ -2132,27 +2198,27 @@ public class ChatBuiltInCommands(
    • Organize folders and structure
    • Generate index files
    • Ensure metadata consistency
-   
+
    📄 **Converting Content**
    • HTML → Markdown
    • PDF → Notes with extracted text/images
    • Video transcripts → Organized notes
    • EPUB → Markdown
-   
+
    🏷️ **Tagging & Metadata**
    • Add/remove tags
    • Update frontmatter
    • Consolidate and restructure tags
-   
+
    ⚙️ **Configuration**
    • View and update settings
    • Validate configuration
    • Manage paths and secrets
-   
+
    💡 Type 'help <topic>' for details (tags, vault, pdf, video, config)
       Or just ask me anything!");
     }
-    
+
     private void ShowTopicHelp(string topic)
     {
         var helpText = topic.ToLowerInvariant() switch
@@ -2165,95 +2231,95 @@ public class ChatBuiltInCommands(
             "session" or "sessions" => GetSessionHelp(),
             _ => $"Unknown topic: {topic}. Try: tags, vault, pdf, video, config, session"
         };
-        
+
         ui.WriteResponse(helpText);
     }
-    
+
     private static string GetTagsHelp() => @"**Tagging & Metadata Features**
 
    I can help you manage tags in your notes vault:
-   
+
    🏷️ **Adding Tags**
    • ""Add #finance tag to all notes in my Budget folder""
    • ""Tag this note with #important #review""
-   
+
    🔄 **Organizing Tags**
    • ""Consolidate duplicate tags""
    • ""Restructure my tags for consistency""
-   
+
    📝 **Frontmatter**
    • ""Update the author field in my course notes""
    • ""Add a 'status: draft' to new notes""
-   
+
    🔧 **CLI Commands**
    • !tag add-nested, !tag consolidate, !tag update-frontmatter";
-    
+
     private static string GetVaultHelp() => @"**Vault Management Features**
 
    📁 **Organization**
    • ""Generate index files for my vault""
    • ""Ensure metadata consistency""
    • ""Sync my vault with OneDrive""
-   
+
    🔍 **Search & Discovery**
    • ""Find all notes about Python""
    • ""What did I learn last week?""
-   
+
    🔧 **CLI Commands**
    • !vault generate-index, !vault ensure-metadata, !vault vault-sync";
-    
+
     private static string GetPdfHelp() => @"**PDF Conversion Features**
 
    📄 **Converting PDFs**
    • ""Convert my PDF lectures to notes""
    • ""Extract text and images from this PDF""
-   
+
    Options:
    • --extract-images: Include diagrams and images
    • --output: Specify output directory
-   
+
    🔧 **CLI Command**
    • !pdf-notes --path ""path/to/pdfs""";
-    
+
     private static string GetVideoHelp() => @"**Video Notes Features**
 
    📺 **Creating Notes**
    • ""Create notes from this YouTube video: [url]""
    • ""Generate notes from videos in this folder""
-   
+
    📝 **Transcripts**
    • ""Consolidate video transcripts in my ML course""
-   
+
    🔧 **CLI Commands**
    • !video-notes --url ""..."", !video-transcripts consolidate";
-    
+
     private static string GetConfigHelp() => @"**Configuration Features**
 
    ⚙️ **Viewing & Updating**
    • ""Show my configuration""
    • ""Change my vault path to...""
    • ""What settings can I change?""
-   
+
    ✅ **Validation**
    • ""Validate my configuration""
-   
+
    🔧 **CLI Commands**
    • !config view, !config update, !config validate";
-    
+
     private static string GetSessionHelp() => @"**Session Management**
 
    💾 **Saving & Loading**
    • session save <name>  - Save current session
    • session list         - List saved sessions
    • session load <name>  - Load a saved session
-   
+
    🗑️ **Cleanup**
    • session purge --older-than 30d
-   
+
    Resume from CLI:
    • na chat --resume
    • na chat --session ""name""";
-    
+
     private void HandleHistory(ICopilotSession? session)
     {
         if (session == null)
@@ -2261,11 +2327,11 @@ public class ChatBuiltInCommands(
             ui.WriteWarning("No active session.");
             return;
         }
-        
+
         // TODO: Get and display session history
         ui.WriteInfo("Session history display not yet implemented.");
     }
-    
+
     private void HandleModel(string[] args, ICopilotSession? session)
     {
         if (args.Length == 0)
@@ -2279,7 +2345,7 @@ public class ChatBuiltInCommands(
             ui.WriteInfo($"Model change to '{args[0]}' not yet implemented.");
         }
     }
-    
+
     private void HandleSession(string[] args, ICopilotSession? session)
     {
         if (args.Length == 0)
@@ -2287,10 +2353,10 @@ public class ChatBuiltInCommands(
             ShowTopicHelp("session");
             return;
         }
-        
+
         var subcommand = args[0].ToLowerInvariant();
         var subArgs = args.Skip(1).ToArray();
-        
+
         switch (subcommand)
         {
             case "save":
@@ -2299,28 +2365,28 @@ public class ChatBuiltInCommands(
                 else
                     HandleSessionSave(subArgs[0], session);
                 break;
-                
+
             case "list":
                 HandleSessionList();
                 break;
-                
+
             case "load":
                 if (subArgs.Length == 0)
                     ui.WriteError("Usage: session load <name>");
                 else
                     ui.WriteInfo($"Session load '{subArgs[0]}' - restart with: na chat --session \"{subArgs[0]}\"");
                 break;
-                
+
             case "purge":
                 HandleSessionPurge(subArgs);
                 break;
-                
+
             default:
                 ui.WriteError($"Unknown session command: {subcommand}");
                 break;
         }
     }
-    
+
     private void HandleSessionSave(string name, ICopilotSession? session)
     {
         if (session == null)
@@ -2328,27 +2394,27 @@ public class ChatBuiltInCommands(
             ui.WriteWarning("No active session to save.");
             return;
         }
-        
+
         // TODO: Save session
         ui.WriteInfo($"Session saved as \"{name}\"");
     }
-    
+
     private void HandleSessionList()
     {
         // TODO: List sessions from SessionManager
         ui.WriteInfo("Session listing not yet implemented.");
     }
-    
+
     private void HandleSessionPurge(string[] args)
     {
         // TODO: Parse --older-than and purge
         ui.WriteInfo("Session purge not yet implemented.");
     }
-    
+
     private void HandleDirectCommand(string command)
     {
         ui.WriteInfo($"[Executing: na {command}]");
-        
+
         // TODO: Execute CLI command and capture output
         ui.WriteInfo("Direct CLI execution not yet implemented.");
     }
@@ -2361,7 +2427,7 @@ public enum BuiltInCommandResult
 {
     /// <summary>Continue the chat loop.</summary>
     Continue,
-    
+
     /// <summary>Exit chat mode.</summary>
     Exit
 }

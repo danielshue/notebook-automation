@@ -18,11 +18,6 @@ public record CopilotAvailabilityResult(
 public record CopilotStartupOptions
 {
     /// <summary>
-    /// Path to Copilot CLI executable. Defaults to "copilot" from PATH.
-    /// </summary>
-    public string? CliPath { get; init; }
-
-    /// <summary>
     /// Working directory for the CLI process.
     /// </summary>
     public string? WorkingDirectory { get; init; }

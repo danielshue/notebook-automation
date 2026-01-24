@@ -18,14 +18,31 @@ public class SessionManager : ISessionManager
     /// </summary>
     /// <param name="logger">Logger instance.</param>
     public SessionManager(ILogger<SessionManager> logger)
+        : this(logger, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SessionManager"/> class with a custom sessions directory.
+    /// </summary>
+    /// <param name="logger">Logger instance.</param>
+    /// <param name="sessionsDirectory">Custom sessions directory (for testing).</param>
+    internal SessionManager(ILogger<SessionManager> logger, string? sessionsDirectory)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        sessionsDirectory = Path.Combine(homeDir, ".notebookautomation", "sessions");
-        indexFilePath = Path.Combine(sessionsDirectory, "index.json");
+        if (sessionsDirectory != null)
+        {
+            this.sessionsDirectory = sessionsDirectory;
+        }
+        else
+        {
+            var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            this.sessionsDirectory = Path.Combine(homeDir, ".notebookautomation", "sessions");
+        }
 
-        Directory.CreateDirectory(sessionsDirectory);
+        indexFilePath = Path.Combine(this.sessionsDirectory, "index.json");
+        Directory.CreateDirectory(this.sessionsDirectory);
     }
 
     /// <inheritdoc/>
