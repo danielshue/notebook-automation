@@ -201,29 +201,39 @@ public class CopilotCommands
                 return;
             }
 
-            var options = new AskOptions
-            {
-                Model = model,
-                Json = json,
-                Stream = stream
-            };
+            // Start the service
+            await copilotService.StartAsync(cancellationToken: cancellationToken);
 
-            var response = await copilotService.AskAsync(question, options, cancellationToken);
-            
-            if (json)
+            try
             {
-                Console.WriteLine(response);
-            }
-            else
-            {
-                AnsiConsole.MarkupLine(response.EscapeMarkup());
-            }
+                var options = new AskOptions
+                {
+                    Model = model,
+                    Json = json,
+                    Stream = stream
+                };
 
-            Environment.ExitCode = 0;
+                var response = await copilotService.AskAsync(question, options, cancellationToken);
+                
+                if (json)
+                {
+                    Console.WriteLine(response);
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine(response.EscapeMarkup());
+                }
+
+                Environment.ExitCode = 0;
+            }
+            finally
+            {
+                await copilotService.StopAsync(cancellationToken);
+            }
         }
         catch (NotImplementedException)
         {
-            AnsiConsole.MarkupLine("[yellow]The 'ask' command will be fully implemented in Phase 2[/]");
+            AnsiConsole.MarkupLine("[yellow]The 'ask' command is using stub AI responses[/]");
             AnsiConsole.MarkupLine($"[dim]You asked: {question.EscapeMarkup()}[/]");
             Environment.ExitCode = 0;
         }
