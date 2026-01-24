@@ -4,10 +4,48 @@
 # This file defines all template-types, type mappings, required fields, and reserved tags for metadata automation.
 
 TemplateTypes:
+  # Base template types provide default configurations for inheritance
+  base-template:
+    Type: note/base
+    Prompt: default_prompt
+    PathResolution:
+      InputRoot: onedrive
+      OutputRoot: vault
+    Fields:
+      publisher:
+        Default: University of Illinois at Urbana-Champaign
+      date-created:
+        Resolver: DateCreatedResolver
+      tags:
+        Default: []
+      auto-generated-state:
+        Default: writable
+
+  base-generic:
+    Type: note/generic
+    Prompt: generic_prompt
+    PathResolution:
+      InputRoot: cwd
+      OutputRoot: input
+    Fields:
+      title:
+        Default: ''
+      date-created:
+        Resolver: DateCreatedResolver
+      source-url:
+        Default: ''
+      tags:
+        Default: [generic]
+      auto-generated-state:
+        Default: writable
+
+  # MBA-specific template types
   pdf-reference:
     BaseTypes:
+      - base-template
       - universal-fields
     Type: note/case-study
+    Prompt: pdf-reference
     RequiredFields:
       - comprehension
       - status
@@ -49,8 +87,10 @@ TemplateTypes:
         Default: writable
   video-reference:
     BaseTypes:
+      - base-template
       - universal-fields
     Type: note/video-note
+    Prompt: video-reference
     RequiredFields:
       - comprehension
       - status
@@ -169,6 +209,28 @@ TemplateTypes:
     Type: note/instruction
     RequiredFields:
       - tags
+
+  # Generic template types for ad-hoc content processing
+  generic-video:
+    BaseTypes:
+      - base-generic
+    Type: note/video
+    Fields:
+      channel:
+        Default: ''
+      video-duration:
+        Default: ''
+
+  generic-pdf:
+    BaseTypes:
+      - base-generic
+    Type: note/document
+    Fields:
+      author:
+        Default: ''
+      page-count:
+        Default: 0
+
 UniversalFields:
   - auto-generated-state
   - date-created
@@ -179,6 +241,8 @@ TypeMapping:
   video_transcript_consolidation: note/video-transcript
   resource-reading: note/reading
   note/instruction: note/instruction
+  generic-video: note/video
+  generic-pdf: note/document
 ReservedTags:
   # Reserved tags cannot be used as custom tags and must be present as fields in all templates
   - auto-generated-state
