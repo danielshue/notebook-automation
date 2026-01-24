@@ -2,35 +2,37 @@
 
 using System.Runtime.CompilerServices;
 
+using Microsoft.Extensions.AI;
+
 namespace NotebookAutomation.Cli.Services.Copilot;
 
 /// <summary>
-/// Implementation of a Copilot conversation session.
+/// Implementation of a Copilot conversation session with live AI integration.
 /// </summary>
 /// <remarks>
-/// This is a working stub implementation that demonstrates the session structure.
-/// For full SDK integration, replace the stub responses with actual IChatClient calls.
-/// See docs/SDK-INTEGRATION-STATUS.md for implementation details.
+/// Uses Microsoft.Extensions.AI IChatClient for production AI responses with streaming
+/// and function calling support for all 21 registered Notebook Automation tools.
 /// </remarks>
 public class CopilotSession : ICopilotSession
 {
-    private readonly object chatClient; // Placeholder - will be IChatClient from Microsoft.Extensions.AI
+    private readonly IChatClient chatClient;
     private readonly ILogger<CopilotSession> logger;
     private readonly ISessionManager sessionManager;
-    private readonly List<ChatMessage> conversationHistory = new();
+    private readonly INotebookTools notebookTools;
+    private readonly List<Microsoft.Extensions.AI.ChatMessage> conversationHistory = new();
     private CopilotSessionMetadata metadata;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CopilotSession"/> class.
     /// </summary>
-    /// <param name="chatClient">The chat client instance (placeholder for SDK integration).</param>
+    /// <param name="chatClient">The AI chat client instance.</param>
     /// <param name="config">Session configuration.</param>
     /// <param name="logger">Logger instance.</param>
     /// <param name="notebookTools">Notebook tools registry.</param>
     /// <param name="systemMessageBuilder">System message builder.</param>
     /// <param name="sessionManager">Session manager.</param>
     public CopilotSession(
-        object chatClient,
+        IChatClient chatClient,
         CopilotSessionConfig? config,
         ILogger<CopilotSession> logger,
         INotebookTools notebookTools,
@@ -39,11 +41,12 @@ public class CopilotSession : ICopilotSession
     {
         this.chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.notebookTools = notebookTools ?? throw new ArgumentNullException(nameof(notebookTools));
         this.sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
 
         var sessionId = config?.SessionId ?? Guid.NewGuid().ToString("N")[..16];
         var now = DateTime.UtcNow;
-        
+
         metadata = new CopilotSessionMetadata(
             SessionId: sessionId,
             CreatedAt: now,
@@ -53,7 +56,7 @@ public class CopilotSession : ICopilotSession
 
         // Initialize with system message
         var systemMessage = BuildSystemMessage(config, notebookTools, systemMessageBuilder);
-        conversationHistory.Add(new ChatMessage("system", systemMessage, now));
+        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.System, systemMessage));
 
         logger.LogInformation("Created Copilot session {SessionId}", sessionId);
     }
@@ -78,37 +81,54 @@ public class CopilotSession : ICopilotSession
         logger.LogDebug("Sending message to Copilot session {SessionId}", SessionId);
 
         // Add user message to history
-        var now = DateTime.UtcNow;
-        conversationHistory.Add(new ChatMessage("user", message, now));
+        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message));
 
-        // Stub response - For SDK integration, replace with:
-        // var aiMessages = ConvertToAIMessages(conversationHistory);
-        // var response = await ((IChatClient)chatClient).CompleteAsync(aiMessages, cancellationToken);
-        // var responseText = response.Message.Text ?? string.Empty;
-        
-        var responseText = $"I understand you want to: '{message}'. \n\n" +
-                          "This is a demonstration response. For full AI functionality, complete the SDK integration " +
-                          "as described in docs/SDK-INTEGRATION-STATUS.md.\n\n" +
-                          "I have 21 tools available for: vault management, tag operations, PDF/video processing, " +
-                          "markdown generation, configuration, and OneDrive sync.";
-
-        // Add assistant response to history
-        conversationHistory.Add(new ChatMessage("assistant", responseText, DateTime.UtcNow));
-
-        // Update metadata
-        metadata = metadata with 
-        { 
-            LastAccessedAt = DateTime.UtcNow,
-            MessageCount = metadata.MessageCount + 1
+        // Create chat options with tools
+        var options = new ChatOptions
+        {
+            Tools = notebookTools.GetAllTools()
+                .Cast<AITool>()
+                .ToList()
         };
 
-        await Task.CompletedTask;
-        return responseText;
+        try
+        {
+            // Call AI with full conversation history and tools
+            var response = await chatClient.GetResponseAsync(
+                conversationHistory,
+                options,
+                cancellationToken);
+
+            var responseText = response.Text ?? "No response generated.";
+
+            // Add assistant response to history
+            if (response.Messages.Any())
+            {
+                foreach (var msg in response.Messages.Where(m => m.Role == ChatRole.Assistant))
+                {
+                    conversationHistory.Add(msg);
+                }
+            }
+
+            // Update metadata
+            metadata = metadata with
+            {
+                LastAccessedAt = DateTime.UtcNow,
+                MessageCount = metadata.MessageCount + 1
+            };
+
+            return responseText;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error sending message to AI");
+            throw;
+        }
     }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> SendMessageStreamAsync(
-        string message, 
+        string message,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(message))
@@ -119,34 +139,47 @@ public class CopilotSession : ICopilotSession
         logger.LogDebug("Sending streaming message to Copilot session {SessionId}", SessionId);
 
         // Add user message to history
-        var now = DateTime.UtcNow;
-        conversationHistory.Add(new ChatMessage("user", message, now));
+        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(ChatRole.User, message));
 
-        // Stub streaming response - For SDK integration, replace with:
-        // var aiMessages = ConvertToAIMessages(conversationHistory);
-        // await foreach (var update in ((IChatClient)chatClient).CompleteStreamingAsync(aiMessages, cancellationToken))
-        // {
-        //     if (!string.IsNullOrEmpty(update.Text))
-        //     {
-        //         yield return update.Text;
-        //     }
-        // }
-        
-        var response = $"I received: '{message}' - This is a stub streaming response demonstrating the chat interface. Complete SDK integration for live AI responses with tool calling.";
-        var words = response.Split(' ');
-        
-        for (int i = 0; i < words.Length; i++)
+        // Create chat options with tools
+        var options = new ChatOptions
         {
-            yield return words[i] + (i < words.Length - 1 ? " " : "");
-            await Task.Delay(50, cancellationToken); // Simulate streaming effect
+            Tools = notebookTools.GetAllTools()
+                .Cast<AITool>()
+                .ToList()
+        };
+
+        var responseBuilder = new StringBuilder();
+
+        await foreach (var update in chatClient.GetStreamingResponseAsync(
+            conversationHistory,
+            options,
+            cancellationToken))
+        {
+            if (!string.IsNullOrEmpty(update.Text))
+            {
+                responseBuilder.Append(update.Text);
+                yield return update.Text;
+            }
+
+            // Handle tool calls if present  (automatic via UseFunctionInvocation)
+            if (update.Contents.OfType<FunctionCallContent>().Any())
+            {
+                foreach (var toolCall in update.Contents.OfType<FunctionCallContent>())
+                {
+                    logger.LogInformation("Tool called: {ToolName}", toolCall.Name);
+                }
+            }
         }
 
         // Add complete assistant response to history
-        conversationHistory.Add(new ChatMessage("assistant", response, DateTime.UtcNow));
+        conversationHistory.Add(new Microsoft.Extensions.AI.ChatMessage(
+            ChatRole.Assistant,
+            responseBuilder.ToString()));
 
         // Update metadata
-        metadata = metadata with 
-        { 
+        metadata = metadata with
+        {
             LastAccessedAt = DateTime.UtcNow,
             MessageCount = metadata.MessageCount + 1
         };
@@ -155,9 +188,13 @@ public class CopilotSession : ICopilotSession
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessage>> GetHistoryAsync(CancellationToken cancellationToken = default)
     {
-        // Filter out system messages
+        // Filter out system messages and convert to interface type
         var history = conversationHistory
-            .Where(m => m.Role != "system")
+            .Where(m => m.Role != ChatRole.System)
+            .Select(m => new ChatMessage(
+                m.Role.Value,
+                m.Text ?? string.Empty,
+                DateTime.UtcNow)) // Note: original timestamps not preserved in current impl
             .ToList();
 
         return Task.FromResult<IReadOnlyList<ChatMessage>>(history);
@@ -167,9 +204,9 @@ public class CopilotSession : ICopilotSession
     public Task ClearHistoryAsync(CancellationToken cancellationToken = default)
     {
         // Keep system message, clear the rest
-        var systemMessage = conversationHistory.FirstOrDefault(m => m.Role == "system");
+        var systemMessage = conversationHistory.FirstOrDefault(m => m.Role == ChatRole.System);
         conversationHistory.Clear();
-        
+
         if (systemMessage != null)
         {
             conversationHistory.Add(systemMessage);

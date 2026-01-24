@@ -1,15 +1,19 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
+
 namespace NotebookAutomation.Cli.Services.Copilot;
 
 /// <summary>
-/// Implementation of ICopilotService.
+/// Implementation of ICopilotService with live AI integration.
 /// </summary>
 /// <remarks>
-/// This implementation provides a working demonstration of the Copilot infrastructure
-/// with stub AI responses. For full SDK integration, wire actual IChatClient from
-/// Microsoft.Extensions.AI with Azure OpenAI or OpenAI.
-/// See docs/SDK-INTEGRATION-STATUS.md for complete integration instructions.
+/// This implementation uses Microsoft.Extensions.AI with Azure OpenAI or OpenAI
+/// for production AI responses with function calling support.
 /// </remarks>
 public class CopilotService : ICopilotService
 {
@@ -21,7 +25,7 @@ public class CopilotService : ICopilotService
     private readonly ILoggerFactory loggerFactory;
     private readonly AppConfig appConfig;
     private bool isRunning;
-    private object? chatClient; // Will be IChatClient from Microsoft.Extensions.AI when integrated
+    private IChatClient? chatClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CopilotService"/> class.
@@ -59,29 +63,31 @@ public class CopilotService : ICopilotService
         CopilotStartupOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Starting Copilot service");
+        logger.LogInformation("Starting Copilot service with AI integration");
 
         try
         {
-            // Validate AI service configuration exists
+            // Get API configuration
+            var provider = appConfig.AiService?.Provider?.ToLowerInvariant() ?? "openai";
             var apiKey = appConfig.AiService?.GetApiKey();
+
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                logger.LogWarning("No AI API key configured. Service will run in demonstration mode.");
-                logger.LogInformation("Set AZURE_OPENAI_KEY, OPENAI_API_KEY, or FOUNDRY_API_KEY environment variable for full functionality.");
+                logger.LogWarning("No AI API key configured. Service cannot start.");
+                throw new InvalidOperationException(
+                    "No AI API key configured. Set AZURE_OPENAI_KEY, OPENAI_API_KEY, or FOUNDRY_API_KEY environment variable.");
             }
-            
-            // Initialize chat client stub
-            // TODO: For full SDK integration, uncomment and configure:
-            // using Microsoft.Extensions.AI;
-            // var provider = appConfig.AiService?.Provider?.ToLowerInvariant() ?? "openai";
-            // chatClient = CreateChatClient(provider, apiKey, options);
-            
-            chatClient = new object(); // Stub placeholder
-            
+
+            // Create chat client based on provider
+            chatClient = provider switch
+            {
+                "azure" => CreateAzureOpenAIChatClient(apiKey, options),
+                "openai" => CreateOpenAIChatClient(apiKey, options),
+                _ => throw new InvalidOperationException($"Unsupported AI provider: {provider}")
+            };
+
             isRunning = true;
-            logger.LogInformation("Copilot service started in stub mode");
-            logger.LogInformation("See docs/SDK-INTEGRATION-STATUS.md for SDK integration steps");
+            logger.LogInformation("Copilot service started successfully with {Provider} provider", provider);
         }
         catch (Exception ex)
         {
@@ -142,7 +148,7 @@ public class CopilotService : ICopilotService
         }
 
         logger.LogInformation("Resuming session {SessionId}", sessionId);
-        
+
         var sessionMetadata = await sessionManager.LoadSessionAsync(sessionId, cancellationToken);
         if (sessionMetadata == null)
         {
@@ -208,10 +214,15 @@ public class CopilotService : ICopilotService
 
         try
         {
-            // Stub response - For SDK integration, replace with IChatClient.CompleteAsync call
-            await Task.Delay(100, cancellationToken); // Simulate API call
-            return $"Ask response for: '{prompt}'\n\nThis is a demonstration response. " +
-                   "Complete SDK integration in docs/SDK-INTEGRATION-STATUS.md for live AI processing with tool calling.";
+            // Create message for the AI
+            var messages = new List<Microsoft.Extensions.AI.ChatMessage>
+            {
+                new(ChatRole.User, prompt)
+            };
+
+            // Send to AI and get response
+            var response = await chatClient.GetResponseAsync(messages, cancellationToken: cancellationToken);
+            return response.Text ?? "No response generated.";
         }
         catch (Exception ex)
         {
@@ -232,9 +243,61 @@ public class CopilotService : ICopilotService
             "gpt-3.5-turbo",
             "claude-sonnet-4.5"
         };
-        
+
         logger.LogDebug("Returning {Count} available models", models.Count);
         return Task.FromResult<IReadOnlyList<string>>(models);
+    }
+
+    /// <summary>
+    /// Create an Azure OpenAI chat client.
+    /// </summary>
+    private IChatClient CreateAzureOpenAIChatClient(
+        string apiKey,
+        CopilotStartupOptions? options)
+    {
+        var endpoint = appConfig.AiService?.Azure?.Endpoint;
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            throw new InvalidOperationException("Azure OpenAI endpoint not configured");
+        }
+
+        var deploymentName = appConfig.AiService?.Azure?.Deployment ?? "gpt4";
+
+        logger.LogInformation("Creating Azure OpenAI chat client: {Endpoint}, {Deployment}",
+            endpoint, deploymentName);
+
+        // Use Semantic Kernel's Azure OpenAI connector
+        var kernel = Kernel.CreateBuilder()
+            .AddAzureOpenAIChatCompletion(
+                deploymentName: deploymentName,
+                endpoint: endpoint,
+                apiKey: apiKey)
+            .Build();
+
+        var chatService = kernel.GetRequiredService<IChatCompletionService>();
+        return chatService.AsChatClient();
+    }
+
+    /// <summary>
+    /// Create an OpenAI chat client.
+    /// </summary>
+    private IChatClient CreateOpenAIChatClient(
+        string apiKey,
+        CopilotStartupOptions? options)
+    {
+        var model = appConfig.AiService?.OpenAI?.Model ?? "gpt-4";
+
+        logger.LogInformation("Creating OpenAI chat client: {Model}", model);
+
+        // Use Semantic Kernel's OpenAI connector
+        var kernel = Kernel.CreateBuilder()
+            .AddOpenAIChatCompletion(
+                modelId: model,
+                apiKey: apiKey)
+            .Build();
+
+        var chatService = kernel.GetRequiredService<IChatCompletionService>();
+        return chatService.AsChatClient();
     }
 
     /// <inheritdoc/>

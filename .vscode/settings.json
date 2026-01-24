@@ -1,37 +1,40 @@
 {
-    // Project-specific settings that should be shared across the team
-    "FSharp.suggestGitignore": false,
-    // .NET/C# specific settings
-    "dotnet.defaultSolution": "src/c-sharp/NotebookAutomation.sln",
-    "omnisharp.defaultLaunchSolution": "src/c-sharp/NotebookAutomation.sln",
-    // File associations for this project
-    "files.associations": {
-        "*.md": "markdown",
-        "*.yml": "yaml",
-        "*.yaml": "yaml"
-    },
-    // Project-specific formatting
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit"
-    },
-    "cSpell.words": [
-        "danielshue",
-        "fullpath",
-        "LASTEXITCODE",
-        "NOTEBOOKAUTOMATION",
-        "onedrive",
-        "Shue",
-        "subfolders"
-    ],
-    "cSpell.customDictionaries": {
-        "custom-dictionary-workspace": {
-            "name": "custom-dictionary-workspace",
-            "path": "${workspaceFolder:notebook-automation}/.cspell/custom-dictionary-workspace.txt",
-            "addWords": true,
-            "scope": "workspace"
-        }
+  // Project-specific settings that should be shared across the team
+  "FSharp.suggestGitignore": false,
+  // .NET/C# specific settings
+  "dotnet.defaultSolution": "src/c-sharp/NotebookAutomation.sln",
+  "omnisharp.defaultLaunchSolution": "src/c-sharp/NotebookAutomation.sln",
+  // File associations for this project
+  "files.associations": {
+    "*.md": "markdown",
+    "*.yml": "yaml",
+    "*.yaml": "yaml"
+  },
+  // Project-specific formatting
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "cSpell.words": [
+    "danielshue",
+    "fullpath",
+    "LASTEXITCODE",
+    "NOTEBOOKAUTOMATION",
+    "onedrive",
+    "Shue",
+    "subfolders"
+  ],
+  "cSpell.customDictionaries": {
+    "custom-dictionary-workspace": {
+      "name": "custom-dictionary-workspace",
+      "path": "${workspaceFolder:notebook-automation}/.cspell/custom-dictionary-workspace.txt",
+      "addWords": true,
+      "scope": "workspace"
     }
-    // Personal preferences (font, theme, etc.) should be set in User Settings
-    // not in the workspace settings.json to avoid conflicts between team members
+  },
+  "chat.tools.terminal.autoApprove": {
+    "dotnet build": true
+  }
+  // Personal preferences (font, theme, etc.) should be set in User Settings
+  // not in the workspace settings.json to avoid conflicts between team members
 }

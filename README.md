@@ -18,6 +18,7 @@ Inspired by these projects but needing broader functionality beyond just downloa
 
 ## ✨ Key Features
 
+- **🤖 AI Chat Mode** - Interactive AI assistant with 21 integrated tools for vault management, content processing, and intelligent workflows
 - **📊 Intelligent Processing** - AI-powered content analysis and summarization
 - **🗂️ Obsidian Integration** - Comprehensive vault integration featuring hierarchical course structures, rich YAML frontmatter, contextual menu automation, bidirectional OneDrive synchronization, automated index generation, cross-referenced note linking, and seamless plugin-based workflow management for enhanced knowledge discovery
 - **📈 Progress Tracking** - Real-time processing status and logging of course content
@@ -31,6 +32,151 @@ Inspired by these projects but needing broader functionality beyond just downloa
 - **☁️ OneDrive Folder Synchronization** - Create and maintain folder structures in OneDrive without content transfer for organizational alignment
 - **🔗 OneDrive Shared Links Management** - Generate and manage shareable links for collaborative access to course materials and resources
 - **🔧 Extensible Architecture** - Plugin system for custom processors
+
+## 🤖 AI Chat Mode
+
+Notebook Automation now includes an interactive AI-powered chat mode that brings intelligent assistance directly to your command line. The AI assistant has access to 21 specialized tools for vault management, content processing, and workflow automation.
+
+### ✨ Features
+
+- **💬 Interactive Chat** - Natural language conversation with streaming responses
+- **🛠️ Tool Integration** - AI can execute 21 CLI tools to help manage your vault
+- **📝 Session Management** - Save and resume conversations with full history
+- **⚡ Streaming Responses** - Real-time AI responses as they're generated
+- **🔄 Context Awareness** - AI understands your vault structure and configuration
+- **🎯 One-Shot Queries** - Quick questions without entering chat mode
+
+### 🚀 Quick Start
+
+#### Setup
+
+1. **Set your API key** (choose one provider):
+
+```bash
+# Azure OpenAI
+export AZURE_OPENAI_KEY="your-azure-openai-key"
+
+# OpenAI
+export OPENAI_API_KEY="your-openai-key"
+```
+
+2. **Configure provider** in `config/config.json`:
+
+```json
+{
+  "aiservice": {
+    "provider": "azure", // or "openai"
+    "azure": {
+      "endpoint": "https://your-resource.cognitiveservices.azure.com/",
+      "deployment": "gpt-4",
+      "model": "gpt-4"
+    }
+  },
+  "copilot": {
+    "enabled": true,
+    "autoChatMode": true,
+    "enableStreaming": true
+  }
+}
+```
+
+#### Usage
+
+**Auto-Enter Chat Mode** (if `autoChatMode: true`):
+
+```bash
+na
+```
+
+**Explicit Chat Mode**:
+
+```bash
+na chat
+na chat --model gpt-4o
+```
+
+**One-Shot Questions**:
+
+```bash
+na ask "How do I generate index files for my vault?"
+na ask "What video files do I have?" --json
+```
+
+**Built-in Chat Commands**:
+
+- `help` - Show available commands
+- `exit` or `quit` - Exit chat mode
+- `clear` - Clear screen
+- `history` - Show conversation history
+- `session` - Manage chat sessions
+
+### 🛠️ Available AI Tools (21 Total)
+
+The AI assistant has access to 21 specialized tools across multiple categories:
+
+#### Vault Management
+
+- `vault_generate_index` - Create index files for vault directories
+- `vault_clean_index` - Remove existing index files
+- `vault_ensure_metadata` - Synchronize metadata across markdown files
+- `vault_sync` - Sync vault with OneDrive (up/down)
+
+#### Tag Management
+
+- `tag_add_nested` - Add nested tags to markdown files
+- `tag_consolidate` - Merge duplicate tags
+- `tag_restructure` - Restructure tag hierarchy
+- `tag_update_frontmatter` - Update YAML frontmatter
+- `tag_diagnose_yaml` - Detect YAML issues
+- `tag_metadata_check` - Validate metadata consistency
+- `tag_clean_index` - Remove tag data from indexes
+
+#### File Conversion & Processing
+
+- `pdf_convert` - Convert PDF content to markdown
+- `video_create_notes` - Generate notes from video transcripts
+- `video_consolidate_transcripts` - Merge transcripts into class notes
+- `markdown_generate` - Convert HTML/EPUB to markdown
+
+#### Configuration & Authentication
+
+- `config_view` - Display current configuration
+- `config_update` - Modify settings
+- `config_validate` - Verify configuration
+- `config_list_keys` - List available config keys
+- `config_secrets_status` - Check authentication status
+- `onedrive_refresh_token` - Refresh OneDrive authentication
+
+### 💡 Example Conversations
+
+```bash
+You: Show me my vault structure
+AI: [Uses vault_generate_index to analyze structure]
+    I can see you have 3 main directories...
+
+You: Generate indexes for all directories
+AI: [Calls vault_generate_index]
+    ✓ Created index for /Projects
+    ✓ Created index for /Courses
+    ✓ Created index for /Resources
+
+You: What video files need transcripts?
+AI: [Scans vault using video tools]
+    Found 5 videos without transcripts:
+    - lecture-01.mp4
+    - lecture-02.mp4
+    ...
+```
+
+### 📊 Technical Details
+
+- **AI Provider**: Azure OpenAI or OpenAI via Microsoft.Extensions.AI
+- **Architecture**: Semantic Kernel with function calling
+- **Streaming**: Real-time token streaming for responsive interaction
+- **Session Persistence**: Automatic session saving and restoration
+- **Tool Execution**: Automatic tool invocation based on conversation context
+
+For complete technical documentation, see [SDK Integration Status](docs/SDK-INTEGRATION-STATUS.md).
 
 ## 🏗️ Core Architecture: Location-Agnostic Design
 
