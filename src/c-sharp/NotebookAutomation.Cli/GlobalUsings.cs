@@ -23,6 +23,7 @@ global using NotebookAutomation.Cli.Cli;
 global using NotebookAutomation.Cli.Commands;
 global using NotebookAutomation.Cli.Configuration;
 global using NotebookAutomation.Cli.Models;
+global using NotebookAutomation.Cli.Services.Copilot;
 global using NotebookAutomation.Cli.Startup;
 global using NotebookAutomation.Cli.UI;
 global using NotebookAutomation.Cli.Utilities;

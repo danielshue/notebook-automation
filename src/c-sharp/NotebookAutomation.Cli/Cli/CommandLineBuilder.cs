@@ -104,6 +104,10 @@ internal class CommandLineBuilder
         // Register OneDrive commands
         var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>(), serviceProvider);
         oneDriveCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
+
+        // Register Copilot commands
+        var copilotCommands = new CopilotCommands(loggerFactory.CreateLogger<CopilotCommands>(), serviceProvider);
+        copilotCommands.RegisterCommands(rootCommand);
     }
 
     /// <summary>

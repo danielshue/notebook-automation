@@ -28,6 +28,9 @@ public static class CopilotServiceRegistration
         // Register main Copilot service
         services.AddSingleton<ICopilotService, CopilotService>();
 
+        // Register built-in commands handler
+        services.AddSingleton<ChatBuiltInCommands>();
+
         return services;
     }
 }
