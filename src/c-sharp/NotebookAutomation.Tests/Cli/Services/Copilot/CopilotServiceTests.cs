@@ -17,6 +17,8 @@ public class CopilotServiceTests
     private Mock<ISessionManager> sessionManagerMock = null!;
     private Mock<INotebookTools> notebookToolsMock = null!;
     private Mock<ISystemMessageBuilder> systemMessageBuilderMock = null!;
+    private Mock<ILoggerFactory> loggerFactoryMock = null!;
+    private AppConfig appConfig = null!;
 
     [TestInitialize]
     public void Initialize()
@@ -27,6 +29,26 @@ public class CopilotServiceTests
         sessionManagerMock = new Mock<ISessionManager>();
         notebookToolsMock = new Mock<INotebookTools>();
         systemMessageBuilderMock = new Mock<ISystemMessageBuilder>();
+        loggerFactoryMock = new Mock<ILoggerFactory>();
+        appConfig = new AppConfig();
+        
+        // Setup logger factory to return a logger mock
+        var sessionLoggerMock = new Mock<ILogger<CopilotSession>>();
+        loggerFactoryMock
+            .Setup(x => x.CreateLogger(It.IsAny<string>()))
+            .Returns(sessionLoggerMock.Object);
+    }
+
+    private CopilotService CreateService()
+    {
+        return new CopilotService(
+            loggerMock.Object,
+            availabilityChecker,
+            sessionManagerMock.Object,
+            notebookToolsMock.Object,
+            systemMessageBuilderMock.Object,
+            loggerFactoryMock.Object,
+            appConfig);
     }
 
     /// <summary>
@@ -36,12 +58,7 @@ public class CopilotServiceTests
     public void Constructor_WithValidParameters_ShouldSucceed()
     {
         // Act
-        var service = new CopilotService(
-            loggerMock.Object,
-            availabilityChecker,
-            sessionManagerMock.Object,
-            notebookToolsMock.Object,
-            systemMessageBuilderMock.Object);
+        var service = CreateService();
 
         // Assert
         Assert.IsNotNull(service);
@@ -56,7 +73,7 @@ public class CopilotServiceTests
     {
         // Act & Assert
         Assert.ThrowsException<ArgumentNullException>(() =>
-            new CopilotService(null!, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object));
+            new CopilotService(null!, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object, loggerFactoryMock.Object, appConfig));
     }
 
     /// <summary>
@@ -67,7 +84,7 @@ public class CopilotServiceTests
     {
         // Act & Assert
         Assert.ThrowsException<ArgumentNullException>(() =>
-            new CopilotService(loggerMock.Object, null!, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object));
+            new CopilotService(loggerMock.Object, null!, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object, loggerFactoryMock.Object, appConfig));
     }
 
     /// <summary>
@@ -77,7 +94,7 @@ public class CopilotServiceTests
     public async Task StartAsync_ShouldSetIsRunningTrue()
     {
         // Arrange
-        var service = new CopilotService(loggerMock.Object, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object);
+        var service = CreateService();
 
         // Act
         await service.StartAsync();
@@ -93,7 +110,7 @@ public class CopilotServiceTests
     public async Task StopAsync_ShouldSetIsRunningFalse()
     {
         // Arrange
-        var service = new CopilotService(loggerMock.Object, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object);
+        var service = CreateService();
         await service.StartAsync();
 
         // Act
@@ -110,9 +127,7 @@ public class CopilotServiceTests
     public async Task CheckAvailabilityAsync_ShouldCallChecker()
     {
         // Arrange
-        // Use a real availability checker since we can't mock non-virtual methods
-        var realChecker = new CopilotAvailabilityChecker(checkerLoggerMock.Object);
-        var service = new CopilotService(loggerMock.Object, realChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object);
+        var service = CreateService();
 
         // Act
         var result = await service.CheckAvailabilityAsync();
@@ -129,7 +144,7 @@ public class CopilotServiceTests
     public async Task DisposeAsync_WhenRunning_ShouldStop()
     {
         // Arrange
-        var service = new CopilotService(loggerMock.Object, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object);
+        var service = CreateService();
         await service.StartAsync();
 
         // Act
@@ -146,7 +161,7 @@ public class CopilotServiceTests
     public async Task CreateSessionAsync_WhenNotStarted_ShouldThrow()
     {
         // Arrange
-        var service = new CopilotService(loggerMock.Object, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object);
+        var service = CreateService();
 
         // Act & Assert
         await Assert.ThrowsExceptionAsync<InvalidOperationException>(
@@ -160,7 +175,7 @@ public class CopilotServiceTests
     public async Task StartInteractiveChatAsync_ShouldThrowInvalidOperation()
     {
         // Arrange
-        var service = new CopilotService(loggerMock.Object, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object);
+        var service = CreateService();
 
         // Act & Assert
         await Assert.ThrowsExceptionAsync<InvalidOperationException>(
@@ -174,7 +189,7 @@ public class CopilotServiceTests
     public async Task AskAsync_WhenNotStarted_ShouldThrow()
     {
         // Arrange
-        var service = new CopilotService(loggerMock.Object, availabilityChecker, sessionManagerMock.Object, notebookToolsMock.Object, systemMessageBuilderMock.Object);
+        var service = CreateService();
 
         // Act & Assert
         await Assert.ThrowsExceptionAsync<InvalidOperationException>(

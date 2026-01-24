@@ -25,8 +25,15 @@ public static class CopilotServiceRegistration
         // Register availability checker
         services.AddSingleton<CopilotAvailabilityChecker>();
 
-        // Register main Copilot service
-        services.AddSingleton<ICopilotService, CopilotService>();
+        // Register main Copilot service with all dependencies
+        services.AddSingleton<ICopilotService>(sp => new CopilotService(
+            sp.GetRequiredService<ILogger<CopilotService>>(),
+            sp.GetRequiredService<CopilotAvailabilityChecker>(),
+            sp.GetRequiredService<ISessionManager>(),
+            sp.GetRequiredService<INotebookTools>(),
+            sp.GetRequiredService<ISystemMessageBuilder>(),
+            sp.GetRequiredService<ILoggerFactory>(),
+            sp.GetRequiredService<AppConfig>()));
 
         // Register built-in commands handler
         services.AddSingleton<ChatBuiltInCommands>();
