@@ -17,6 +17,7 @@ global using System.Threading.Tasks;
 
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Configuration;
 
 global using NotebookAutomation.Cli.Cli;
 global using NotebookAutomation.Cli.Commands;

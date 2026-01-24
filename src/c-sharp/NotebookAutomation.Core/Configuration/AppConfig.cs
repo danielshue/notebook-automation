@@ -91,6 +91,12 @@ public class AppConfig : IConfiguration
     public virtual BannerConfig Banners { get; set; } = new BannerConfig();
 
     /// <summary>
+    /// Gets or sets the GitHub Copilot SDK configuration section.
+    /// </summary>
+    [JsonPropertyName("copilot")]
+    public virtual CopilotConfig Copilot { get; set; } = new CopilotConfig();
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AppConfig"/> class.
     /// Default constructor for manual initialization.
     /// </summary>
