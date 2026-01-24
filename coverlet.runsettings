@@ -6,7 +6,6 @@
         <ParallelizeWorkers>false</ParallelizeWorkers>
         <ParallelizeAssembly>false</ParallelizeAssembly>
         <ExecutionThreadApartmentState>STA</ExecutionThreadApartmentState>
-        <SettingsFile></SettingsFile>
     </MSTest>
 
     <!-- Test execution timeout -->
@@ -23,6 +22,10 @@
                     <Include>[NotebookAutomation.Core]*,[NotebookAutomation.Cli]*</Include>
                     <ExcludeByFile>**/Migrations/**/*.cs</ExcludeByFile>
                     <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+                    <SingleHit>false</SingleHit>
+                    <UseSourceLink>true</UseSourceLink>
+                    <DeterministicReport>true</DeterministicReport>
+                    <SkipAutoProps>true</SkipAutoProps>
                 </Configuration>
             </DataCollector>
         </DataCollectors>
