@@ -612,7 +612,9 @@ internal class VideoCommands
                             timeout,
                             localResourcesPathForBatchProcessor,
                             appConfig,
-                            noShareLinks).ConfigureAwait(false);
+                            noShareLinks,
+                            templateTypeName,
+                            promptOverride).ConfigureAwait(false);
                     },
                     $"Processing video files from {(isFile ? "file" : "directory")}: {resolvedInput}").ConfigureAwait(false);
 

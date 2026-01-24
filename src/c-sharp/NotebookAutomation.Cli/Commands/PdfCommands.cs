@@ -523,7 +523,9 @@ internal class PdfCommands
                             retryFailed,
                             timeout,
                             localResourcesPathForBatchProcessor,
-                            appConfig).ConfigureAwait(false);
+                            appConfig,
+                            templateTypeName,
+                            promptOverride).ConfigureAwait(false);
                     },
                     $"Processing PDF files from {(isFile ? "file" : "directory")}: {resolvedInput}").ConfigureAwait(false); logger.LogInformation($"PDF processing completed. Success: {result.Processed}, Failed: {result.Failed}");
                 if (!string.IsNullOrWhiteSpace(result.Summary))

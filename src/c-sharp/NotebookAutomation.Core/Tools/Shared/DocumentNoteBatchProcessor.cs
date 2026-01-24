@@ -224,6 +224,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <param name="noteType">Type of note (e.g., "PDF Note", "Video Note").</param>
     /// <param name="failedFilesListName">Name of the failed files list file (defaults to "failed_files.txt").</param>
     /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
+    /// <param name="templateTypeName">Optional template type name to use for processing.</param>
+    /// <param name="promptOverride">Optional prompt file override (name or full path).</param>
     /// <returns>A BatchProcessResult containing processing statistics and summary information.</returns>
     public virtual async Task<BatchProcessResult> ProcessDocumentsAsync(
         string input,
@@ -239,7 +241,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         AppConfig? appConfig = null,
         string noteType = "Document Note",
         string failedFilesListName = "failed_files.txt",
-        bool noShareLinks = false)
+        bool noShareLinks = false,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         // Validate input parameters and setup processing
         var setupResult = ValidateAndSetupProcessing(input, output, appConfig);
@@ -280,7 +284,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         string? effectiveResourcesRoot = resourcesRoot;        // Process files with optional parallelization
         var (processedCount, failedCount, failedFiles) = await ProcessFilesAsync(
             files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
-            openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType, appConfig).ConfigureAwait(false);
+            openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType, appConfig,
+            templateTypeName, promptOverride).ConfigureAwait(false);
 
         processed = processedCount;
         failed = failedCount;
@@ -355,6 +360,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <param name="timeoutSeconds">API timeout in seconds.</param>
     /// <param name="noShareLinks">Whether to skip share link generation.</param>
     /// <param name="noteType">Type of note to generate.</param>
+    /// <param name="templateTypeName">Optional template type name to use for processing.</param>
+    /// <param name="promptOverride">Optional prompt file override (name or full path).</param>
     /// <returns>Tuple indicating success and any error message.</returns>
     protected virtual async Task<(bool success, string? errorMessage)> ProcessSingleFileAsync(
         string filePath,
@@ -369,7 +376,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         bool noSummary,
         int? timeoutSeconds,
         bool noShareLinks,
-        string noteType)
+        string noteType,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         logger.LogInformation($"DEBUG START: ProcessSingleFileAsync called with forceOverwrite={forceOverwrite} for file: {filePath}");
         try
@@ -442,7 +451,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             // Generate AI summary with progress tracking
             var (summaryText, summaryTokens, summaryTime) = await GenerateAISummaryAsync(
                 filePath, text, metadata, queueItem, fileIndex, totalFiles,
-                openAiApiKey, noSummary, timeoutSeconds, resourcesRoot, noShareLinks).ConfigureAwait(false);
+                openAiApiKey, noSummary, timeoutSeconds, resourcesRoot, noShareLinks,
+                templateTypeName, promptOverride).ConfigureAwait(false);
 
             // Generate and save markdown
             await GenerateAndSaveMarkdownAsync(
@@ -1066,6 +1076,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <param name="timeoutSeconds">API timeout in seconds.</param>
     /// <param name="resourcesRoot">Resources root directory.</param>
     /// <param name="noShareLinks">Whether to skip share link generation.</param>
+    /// <param name="templateTypeName">Optional template type name to use for processing.</param>
+    /// <param name="promptOverride">Optional prompt file override (name or full path).</param>
     /// <returns>Tuple containing summary text, token count, and summary time.</returns>
     protected virtual async Task<(string summaryText, int summaryTokens, TimeSpan summaryTime)> GenerateAISummaryAsync(
         string filePath,
@@ -1078,7 +1090,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         bool noSummary,
         int? timeoutSeconds,
         string? resourcesRoot,
-        bool noShareLinks)
+        bool noShareLinks,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         var summaryStopwatch = Stopwatch.StartNew();
         string summaryText = string.Empty;
@@ -1092,6 +1106,25 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             return (string.Empty, 0, summaryStopwatch.Elapsed);
         }
 
+        // Resolve prompt name based on template type and prompt override
+        // Resolution order: promptOverride → templateTypeName-based prompt → default
+        string? resolvedPromptName = null;
+        
+        if (!string.IsNullOrEmpty(promptOverride))
+        {
+            // CLI prompt override takes highest priority
+            resolvedPromptName = promptOverride;
+            logger.LogDebug("Using prompt override: {PromptName}", promptOverride);
+        }
+        else if (!string.IsNullOrEmpty(templateTypeName))
+        {
+            // Use template type name to infer prompt
+            // For now, use a simple mapping: template type name maps to prompt name
+            // Full template type resolution would require MetadataSchemaLoader access
+            resolvedPromptName = templateTypeName;
+            logger.LogDebug("Using template-type-based prompt: {PromptName}", templateTypeName);
+        }
+
         // Use the standard AI summary generation for the processor
         OnProcessingProgressChanged(
             filePath,
@@ -1099,7 +1132,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             fileIndex,
             totalFiles);
 
-        summaryText = await processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
+        summaryText = await processor.GenerateAiSummaryAsync(text, variables: null, promptFileName: resolvedPromptName).ConfigureAwait(false);
 
         // Estimate tokens
         var estimateTokenMethod = aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -1227,6 +1260,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <param name="noShareLinks">Whether to skip share link creation.</param>
     /// <param name="noteType">Type of note being generated.</param>
     /// <param name="appConfig">Application configuration containing parallel processing settings.</param>
+    /// <param name="templateTypeName">Optional template type name to use for processing.</param>
+    /// <param name="promptOverride">Optional prompt file override (name or full path).</param>
     /// <returns>Tuple containing processed count, failed count, and list of failed files.</returns>
     protected virtual async Task<(int processed, int failed, List<string> failedFiles)> ProcessFilesAsync(
         List<string> files,
@@ -1239,7 +1274,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         int? timeoutSeconds,
         bool noShareLinks,
         string noteType,
-        AppConfig? appConfig)
+        AppConfig? appConfig,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         var failedFiles = new List<string>();
         int processed = 0;
@@ -1256,7 +1293,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             var (parallelProcessed, parallelFailed, parallelFailedFiles) = await ProcessFilesInParallelAsync(
                 files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
                 openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType,
-                maxFileParallelism, fileRateLimitMs).ConfigureAwait(false);
+                maxFileParallelism, fileRateLimitMs, templateTypeName, promptOverride).ConfigureAwait(false);
 
             processed = parallelProcessed;
             failed = parallelFailed;
@@ -1268,7 +1305,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
 
             var (sequentialProcessed, sequentialFailed, sequentialFailedFiles) = await ProcessFilesSequentiallyAsync(
                 files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
-                openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
+                openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType, templateTypeName, promptOverride).ConfigureAwait(false);
 
             processed = sequentialProcessed;
             failed = sequentialFailed;
@@ -1293,7 +1330,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         bool noSummary,
         int? timeoutSeconds,
         bool noShareLinks,
-        string noteType)
+        string noteType,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         var failedFiles = new List<string>();
         int processed = 0;
@@ -1335,7 +1374,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             // Process the single file
             var (success, errorMessage) = await ProcessSingleFileAsync(
                 filePath, queueItem, fileIndex + 1, files.Count, effectiveOutput, effectiveResourcesRoot,
-                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
+                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType,
+                templateTypeName, promptOverride).ConfigureAwait(false);
 
             if (success)
             {
@@ -1382,7 +1422,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         bool noShareLinks,
         string noteType,
         int maxParallelism,
-        int rateLimitMs)
+        int rateLimitMs,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         var failedFiles = new ConcurrentBag<string>();
         var processedCount = 0;
@@ -1420,7 +1462,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                     noSummary,
                     timeoutSeconds,
                     noShareLinks,
-                    noteType).ConfigureAwait(false);
+                    noteType,
+                    templateTypeName,
+                    promptOverride).ConfigureAwait(false);
             }
             finally
             {
@@ -1476,7 +1520,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         bool noSummary,
         int? timeoutSeconds,
         bool noShareLinks,
-        string noteType)
+        string noteType,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         var fileStopwatch = Stopwatch.StartNew();
 
@@ -1512,7 +1558,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             // Process the single file
             var (success, errorMessage) = await ProcessSingleFileAsync(
                 filePath, queueItem, fileIndex + 1, totalFiles, effectiveOutput, effectiveResourcesRoot,
-                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false); fileStopwatch.Stop();
+                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType,
+                templateTypeName, promptOverride).ConfigureAwait(false); fileStopwatch.Stop();
             logger.LogDebug($"Processing file: {filePath} took {fileStopwatch.Elapsed.TotalSeconds:F1}s");
 
             return (success, errorMessage, filePath);
