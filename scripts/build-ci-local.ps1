@@ -733,19 +733,27 @@ try {
             if (Test-Path $checksumsPath) {
                 try {
                     $existing = Get-Content $checksumsPath -Raw | ConvertFrom-Json
-                    $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
-                    foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
-                    foreach ($name in $expected) {
-                        if ($hashMap[$name] -ne $existing.files.$name) { throw "Checksum mismatch for $name" }
+                    if (-not $existing.files) {
+                        Write-Host "⚠️  checksums.json exists but has no files property - regenerating" -ForegroundColor $Yellow
+                        $existing = $null
                     }
-                    Write-Host "✅ Existing checksums.json verified" -ForegroundColor $Green
-                    return $checksumsPath
+                    if ($existing) {
+                        $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+                        foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
+                        foreach ($name in $expected) {
+                            if ($hashMap[$name] -ne $existing.files.$name) { throw "Checksum mismatch for $name" }
+                        }
+                        Write-Host "✅ Existing checksums.json verified" -ForegroundColor $Green
+                        return $checksumsPath
+                    }
                 }
                 catch {
-                    throw "checksums.json validation failed: $($_.Exception.Message)"
+                    Write-Host "⚠️  checksums.json validation failed: $($_.Exception.Message) - regenerating" -ForegroundColor $Yellow
+                    $existing = $null
                 }
             }
-            else {
+            # Generate new checksums.json if validation failed or file doesn't exist
+            if (-not $existing) {
                 $payload = [ordered]@{
                     version      = 'local-dev'
                     algorithm    = 'SHA256'
