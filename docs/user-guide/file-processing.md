@@ -235,6 +235,95 @@ Track processing progress:
 .\na.exe process "docs/" --progress none
 ```
 
+## Template Types and Custom Prompts
+
+The Notebook Automation system supports flexible template types and custom prompts for different content processing scenarios.
+
+### Template Types
+
+Template types determine the metadata structure and AI prompt used for processing:
+
+**MBA Course Templates** (default for academic content):
+- `video-reference` - MBA course video materials with business frameworks
+- `pdf-reference` - Case studies and academic papers
+
+**Generic Templates** (for ad-hoc content):
+- `generic-video` - General-purpose video summarization
+- `generic-pdf` - General-purpose document summarization
+
+**Usage:**
+```bash
+# Use generic template for non-course content
+na video-notes -p "conference-talk.mp4" --template-type generic-video
+
+# Use specific template for case studies
+na pdf-notes -p "harvard-case.pdf" --template-type pdf-reference
+```
+
+### Custom Prompts
+
+Override the AI prompt file to customize summary generation:
+
+**By prompt name** (from prompts directory):
+```bash
+na video-notes -p "lecture.mp4" --prompt research-summary
+```
+
+**By full file path**:
+```bash
+na video-notes -p "video.mp4" --prompt "D:\prompts\custom-analysis.md"
+na pdf-notes -p "doc.pdf" --prompt "C:\work\prompts\detailed-review.md"
+```
+
+### Available Prompts
+
+The system includes several built-in prompts:
+
+- `video-reference` - MBA-focused video summarization with business concepts
+- `pdf-reference` - Academic paper and case study analysis
+- `generic_prompt` - General-purpose content summarization
+- `default_prompt` - System default (comprehensive MBA-style summary)
+- `final_summary_prompt` - Multi-chunk synthesis prompt
+
+### Combining Options
+
+Template types and prompts can be used together:
+
+```bash
+# Use generic template with custom prompt
+na video-notes -p "talk.mp4" --template-type generic-video --prompt short-summary
+
+# Process ad-hoc content outside vault
+na pdf-notes -p "C:\Downloads\report.pdf" --template-type generic-pdf --prompt executive-summary
+```
+
+### Use Cases
+
+**MBA Course Content** (default behavior):
+```bash
+# Automatically uses video-reference/pdf-reference templates
+na video-notes -p "MBA/Finance/lecture-01.mp4"
+na pdf-notes -p "MBA/Strategy/case-study.pdf"
+```
+
+**Conference or Workshop Videos**:
+```bash
+# Use generic template for non-course content
+na video-notes -p "conference/keynote.mp4" --template-type generic-video
+```
+
+**External Documents**:
+```bash
+# Process documents from outside the vault structure
+na pdf-notes -p "C:\Downloads\whitepaper.pdf" --template-type generic-pdf
+```
+
+**Research Analysis**:
+```bash
+# Use custom prompt for specific analysis needs
+na pdf-notes -p "research-paper.pdf" --prompt literature-review
+```
+
 ## Best Practices
 
 ### File Organization

@@ -107,6 +107,11 @@ na video-notes -p <path> [options]
 - `--retry-failed` - Retry only files that failed in previous run
 - `--timeout <seconds>` - Set API request timeout in seconds
 
+#### AI & Template Options
+
+- `-t, --template-type <name>` - Specify template type to use (e.g., `generic-video`, `video-reference`)
+- `--prompt <name-or-path>` - Override prompt file (e.g., `custom-prompt` or `D:\prompts\my-prompt.md`)
+
 #### Authentication Options
 
 - `--refresh-auth` - Force refresh Microsoft Graph API authentication
@@ -137,6 +142,21 @@ na video-notes -p "videos/" --retry-failed
 **Force reprocess existing notes:**
 ```bash
 na video-notes -p "video.mp4" --force
+```
+
+**Use generic template for ad-hoc content:**
+```bash
+na video-notes -p "conference-talk.mp4" --template-type generic-video
+```
+
+**Use custom prompt file:**
+```bash
+na video-notes -p "lecture.mp4" --prompt research-summary
+```
+
+**Use custom prompt from specific path:**
+```bash
+na video-notes -p "video.mp4" --prompt "D:\prompts\custom-analysis.md"
 ```
 
 ### Common Use Cases
@@ -233,6 +253,11 @@ na pdf-notes -p <path> [options]
 - `--retry-failed` - Retry only failed files from previous run
 - `--timeout <seconds>` - Set API request timeout
 
+#### AI & Template Options
+
+- `-t, --template-type <name>` - Specify template type to use (e.g., `generic-pdf`, `pdf-reference`)
+- `--prompt <name-or-path>` - Override prompt file (e.g., `custom-prompt` or `D:\prompts\my-prompt.md`)
+
 #### Authentication Options
 
 - `--refresh-auth` - Force refresh Microsoft Graph API authentication
@@ -258,6 +283,16 @@ na pdf-notes -p "documents/" --no-summary --verbose
 **Retry failed PDFs:**
 ```bash
 na pdf-notes -p "pdfs/" --retry-failed
+```
+
+**Use generic template for ad-hoc documents:**
+```bash
+na pdf-notes -p "external-report.pdf" --template-type generic-pdf
+```
+
+**Use custom prompt for specialized processing:**
+```bash
+na pdf-notes -p "case-study.pdf" --prompt case-analysis
 ```
 
 ### Common Use Cases

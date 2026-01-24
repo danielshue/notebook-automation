@@ -90,6 +90,98 @@ pdf-pages: 45
 pdf-size: "2.3 MB"
 ```
 
+### Phase 2.5: Prompt Resolution
+
+Before AI summary generation begins, the system resolves which prompt file to use through a prioritized resolution order:
+
+#### Prompt Resolution Flow
+
+```mermaid
+graph TD
+    A[Start AI Summary] --> B{CLI --prompt option?}
+    B -->|Yes| C[Use CLI Override]
+    B -->|No| D{Template Type Prompt?}
+    D -->|Yes| E[Use Template Prompt]
+    D -->|No| F{CLI --template-type?}
+    F -->|Yes| G[Use Template Type Name as Prompt]
+    F -->|No| H[Use Default: final_summary_prompt]
+    C --> I[Load Prompt File]
+    E --> I
+    G --> I
+    H --> I
+```
+
+#### Resolution Order
+
+The system follows this priority order:
+
+1. **CLI Prompt Override** (`--prompt` option)
+   - Highest priority
+   - Can be prompt name or full file path
+   - Example: `--prompt custom-analysis` or `--prompt "D:\prompts\detailed.md"`
+
+2. **Template Type Prompt** (from metadata schema)
+   - Template type's `Prompt` property
+   - Inherited from base types if not explicitly set
+   - Example: `video-reference` template uses `video-reference.md` prompt
+
+3. **Template Type Name** (`--template-type` option)
+   - Used as prompt filename if no explicit Prompt property
+   - Example: `--template-type generic-video` → tries `generic-video.md`
+
+4. **System Default**
+   - Falls back to `final_summary_prompt.md`
+   - Used when no other source specifies a prompt
+
+#### Implementation
+
+```csharp
+// DocumentNoteBatchProcessor.GenerateAISummaryAsync()
+string? resolvedPromptName = null;
+
+if (!string.IsNullOrEmpty(promptOverride))
+{
+    // CLI prompt override takes highest priority
+    resolvedPromptName = promptOverride;
+    logger.LogDebug("Using prompt override: {PromptName}", promptOverride);
+}
+else if (!string.IsNullOrEmpty(templateTypeName))
+{
+    // Use template type name to infer prompt
+    resolvedPromptName = templateTypeName;
+    logger.LogDebug("Using template-type-based prompt: {PromptName}", templateTypeName);
+}
+
+// Pass resolved prompt to processor
+summaryText = await processor.GenerateAiSummaryAsync(
+    text, 
+    variables: null, 
+    promptFileName: resolvedPromptName);
+```
+
+#### Built-in Prompts
+
+The system includes several specialized prompts:
+
+- **video-reference.md** - MBA course video materials with business frameworks and strategic thinking
+- **pdf-reference.md** - Case studies and academic papers with analytical focus
+- **generic_prompt.md** - General-purpose summarization for ad-hoc content
+- **default_prompt.md** - Comprehensive MBA-style summary (copy of final_summary_prompt)
+- **final_summary_prompt.md** - Multi-chunk synthesis and consolidation
+- **chunk_summary_prompt.md** - Individual chunk processing for large documents
+
+#### Custom Prompts
+
+Users can create custom prompt files in the `prompts/` directory or use full paths:
+
+```bash
+# Use custom prompt from prompts directory
+na video-notes -p "video.mp4" --prompt research-analysis
+
+# Use custom prompt from arbitrary location
+na video-notes -p "video.mp4" --prompt "C:\work\prompts\detailed-review.md"
+```
+
 ### Phase 3: AI Summary Generation
 
 This is the core of the system and involves sophisticated text processing:
