@@ -35,6 +35,11 @@ public static class CopilotServiceRegistration
         services.AddSingleton<INotebookTools, NotebookTools>();
         services.AddSingleton<ISystemMessageBuilder, SystemMessageBuilder>();
 
+        // Register session management (Phase 4)
+        services.AddSingleton<ISessionManager, SessionManager>();
+        services.AddSingleton<IUserPreferencesService, UserPreferencesService>();
+        services.AddSingleton<IGitService, GitService>();
+
         return services;
     }
 }
