@@ -33,69 +33,62 @@ public class CopilotCommands
     {
         ArgumentNullException.ThrowIfNull(rootCommand);
 
-        // Create 'copilot' parent command
-        var copilotCommand = new Command("copilot", "GitHub Copilot commands and setup");
+        // Create 'copilot' parent command - now the main entry point for chat interaction
+        var copilotCommand = new Command("copilot", "Enter interactive AI chat mode or manage GitHub Copilot");
 
-        var installGuideOption = new Option<bool>(
-            "--install-guide",
-            "Display platform-specific installation instructions for GitHub Copilot CLI");
-        copilotCommand.AddOption(installGuideOption);
-
-        var installOption = new Option<bool>(
-            "--install",
-            "Attempt to automatically install GitHub Copilot CLI (Windows only)");
-        copilotCommand.AddOption(installOption);
-
-        var statusOption = new Option<bool>(
-            "--status",
-            "Check GitHub Copilot CLI availability and authentication status");
-        statusOption.AddAlias("-s");
-        copilotCommand.AddOption(statusOption);
-
-        copilotCommand.SetHandler(async (context) =>
-        {
-            var showInstallGuide = context.ParseResult.GetValueForOption(installGuideOption);
-            var attemptInstall = context.ParseResult.GetValueForOption(installOption);
-            var showStatus = context.ParseResult.GetValueForOption(statusOption);
-
-            await CopilotSetupCommandHandlerAsync(
-                showInstallGuide,
-                attemptInstall,
-                showStatus,
-                context.GetCancellationToken());
-        });
-
-        rootCommand.AddCommand(copilotCommand);
-
-        // Create 'chat' command
-        var chatCommand = new Command("chat", "Enter interactive AI chat mode");
-
+        // Add chat options directly to copilot command
         var resumeOption = new Option<bool>(
             "--resume",
             "Resume the last chat session");
-        chatCommand.AddOption(resumeOption);
+        copilotCommand.AddOption(resumeOption);
 
         var sessionOption = new Option<string?>(
             "--session",
             "Resume a specific chat session by ID");
-        chatCommand.AddOption(sessionOption);
+        copilotCommand.AddOption(sessionOption);
 
         var modelOption = new Option<string?>(
             "--model",
             "Specify the AI model to use");
-        chatCommand.AddOption(modelOption);
+        copilotCommand.AddOption(modelOption);
 
         var noBannerOption = new Option<bool>(
             "--no-banner",
             "Skip the welcome banner");
-        chatCommand.AddOption(noBannerOption);
+        copilotCommand.AddOption(noBannerOption);
 
         var highContrastOption = new Option<bool>(
             "--high-contrast",
             "Use high contrast colors");
-        chatCommand.AddOption(highContrastOption);
+        copilotCommand.AddOption(highContrastOption);
 
-        chatCommand.SetHandler(async (context) =>
+        // Create 'status' subcommand
+        var statusCommand = new Command("status", "Check GitHub Copilot CLI availability and authentication status");
+        statusCommand.SetHandler(async (context) =>
+        {
+            await ShowStatusAsync(context.GetCancellationToken());
+        });
+        copilotCommand.AddCommand(statusCommand);
+
+        // Create 'install-guide' subcommand
+        var installGuideCommand = new Command("install-guide", "Display platform-specific installation instructions for GitHub Copilot CLI");
+        installGuideCommand.SetHandler((context) =>
+        {
+            CopilotInstallationGuide.DisplayInstructions();
+            return Task.CompletedTask;
+        });
+        copilotCommand.AddCommand(installGuideCommand);
+
+        // Create 'install' subcommand
+        var installCommand = new Command("install", "Attempt to automatically install GitHub Copilot CLI (Windows only)");
+        installCommand.SetHandler(async (context) =>
+        {
+            await AttemptInstallAsync(context.GetCancellationToken());
+        });
+        copilotCommand.AddCommand(installCommand);
+
+        // Main copilot command handler - enters chat mode by default
+        copilotCommand.SetHandler(async (context) =>
         {
             var resume = context.ParseResult.GetValueForOption(resumeOption);
             var sessionId = context.ParseResult.GetValueForOption(sessionOption);
@@ -112,7 +105,7 @@ public class CopilotCommands
                 context.GetCancellationToken());
         });
 
-        rootCommand.AddCommand(chatCommand);
+        rootCommand.AddCommand(copilotCommand);
 
         // Create 'ask' command
         var askCommand = new Command("ask", "Ask a one-shot question to the AI");
@@ -205,106 +198,88 @@ public class CopilotCommands
     }
 
     /// <summary>
-    /// Handler for the 'copilot' setup command.
+    /// Handler for the 'copilot status' subcommand.
     /// </summary>
-    private async Task CopilotSetupCommandHandlerAsync(
-        bool showInstallGuide,
-        bool attemptInstall,
-        bool showStatus,
-        CancellationToken cancellationToken)
+    private async Task ShowStatusAsync(CancellationToken cancellationToken)
     {
-        // Default to status check if no other option specified
-        if (!showInstallGuide && !attemptInstall && !showStatus)
+        var copilotService = serviceProvider.GetRequiredService<ICopilotService>();
+        var availability = await copilotService.CheckAvailabilityAsync(cancellationToken);
+
+        AnsiConsole.MarkupLine("[bold]GitHub Copilot Status[/]");
+        AnsiConsole.WriteLine();
+
+        var table = new Table();
+        table.AddColumn("Check");
+        table.AddColumn("Status");
+
+        table.AddRow(
+            "CLI Installed",
+            availability.IsCliInstalled
+                ? "[green]✓ Yes[/]"
+                : "[red]✗ No[/]");
+
+        table.AddRow(
+            "Authenticated",
+            availability.IsAuthenticated
+                ? "[green]✓ Yes[/]"
+                : availability.IsCliInstalled ? "[red]✗ No[/]" : "[dim]-[/]");
+
+        table.AddRow(
+            "Available",
+            availability.IsAvailable
+                ? "[green]✓ Ready[/]"
+                : "[yellow]✗ Not Ready[/]");
+
+        if (!string.IsNullOrEmpty(availability.CliVersion))
         {
-            showStatus = true;
+            table.AddRow("CLI Version", availability.CliVersion);
         }
 
-        if (showInstallGuide)
-        {
-            CopilotInstallationGuide.DisplayInstructions();
-            return;
-        }
+        AnsiConsole.Write(table);
 
-        if (attemptInstall)
+        if (!availability.IsAvailable)
         {
-            AnsiConsole.MarkupLine("[bold]Attempting to install GitHub Copilot CLI...[/]");
             AnsiConsole.WriteLine();
-
-            var success = await CopilotInstallationGuide.TryInstallAsync(logger, cancellationToken);
-
-            if (success)
+            if (!availability.IsCliInstalled)
             {
-                AnsiConsole.MarkupLine("[green]Installation complete![/]");
-                AnsiConsole.MarkupLine("[dim]Please restart your terminal to refresh PATH.[/]");
+                AnsiConsole.MarkupLine("[dim]Run [cyan]na copilot install-guide[/] for installation instructions.[/]");
             }
-            else
+            else if (!availability.IsAuthenticated)
             {
-                AnsiConsole.MarkupLine("[yellow]Automatic installation failed or is not supported on this platform.[/]");
-                AnsiConsole.WriteLine();
-                AnsiConsole.MarkupLine("[dim]Run [cyan]na copilot --install-guide[/] for manual installation instructions.[/]");
-                Environment.ExitCode = 1;
+                AnsiConsole.MarkupLine("[dim]Run [cyan]gh auth login --scopes copilot[/] to authenticate.[/]");
             }
 
-            return;
-        }
-
-        if (showStatus)
-        {
-            var copilotService = serviceProvider.GetRequiredService<ICopilotService>();
-            var availability = await copilotService.CheckAvailabilityAsync(cancellationToken);
-
-            AnsiConsole.MarkupLine("[bold]GitHub Copilot Status[/]");
-            AnsiConsole.WriteLine();
-
-            var table = new Table();
-            table.AddColumn("Check");
-            table.AddColumn("Status");
-
-            table.AddRow(
-                "CLI Installed",
-                availability.IsCliInstalled
-                    ? "[green]✓ Yes[/]"
-                    : "[red]✗ No[/]");
-
-            table.AddRow(
-                "Authenticated",
-                availability.IsAuthenticated
-                    ? "[green]✓ Yes[/]"
-                    : availability.IsCliInstalled ? "[red]✗ No[/]" : "[dim]-[/]");
-
-            table.AddRow(
-                "Available",
-                availability.IsAvailable
-                    ? "[green]✓ Ready[/]"
-                    : "[yellow]✗ Not Ready[/]");
-
-            if (!string.IsNullOrEmpty(availability.CliVersion))
-            {
-                table.AddRow("CLI Version", availability.CliVersion);
-            }
-
-            AnsiConsole.Write(table);
-
-            if (!availability.IsAvailable)
+            if (availability.ErrorMessage != null)
             {
                 AnsiConsole.WriteLine();
-                if (!availability.IsCliInstalled)
-                {
-                    AnsiConsole.MarkupLine("[dim]Run [cyan]na copilot --install-guide[/] for installation instructions.[/]");
-                }
-                else if (!availability.IsAuthenticated)
-                {
-                    AnsiConsole.MarkupLine("[dim]Run [cyan]gh auth login --scopes copilot[/] to authenticate.[/]");
-                }
-
-                if (availability.ErrorMessage != null)
-                {
-                    AnsiConsole.WriteLine();
-                    AnsiConsole.MarkupLine($"[dim]{availability.ErrorMessage.EscapeMarkup()}[/]");
-                }
-
-                Environment.ExitCode = 1;
+                AnsiConsole.MarkupLine($"[dim]{availability.ErrorMessage.EscapeMarkup()}[/]");
             }
+
+            Environment.ExitCode = 1;
+        }
+    }
+
+    /// <summary>
+    /// Handler for the 'copilot install' subcommand.
+    /// </summary>
+    private async Task AttemptInstallAsync(CancellationToken cancellationToken)
+    {
+        AnsiConsole.MarkupLine("[bold]Attempting to install GitHub Copilot CLI...[/]");
+        AnsiConsole.WriteLine();
+
+        var success = await CopilotInstallationGuide.TryInstallAsync(logger, cancellationToken);
+
+        if (success)
+        {
+            AnsiConsole.MarkupLine("[green]Installation complete![/]");
+            AnsiConsole.MarkupLine("[dim]Please restart your terminal to refresh PATH.[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[yellow]Automatic installation failed or is not supported on this platform.[/]");
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[dim]Run [cyan]na copilot install-guide[/] for manual installation instructions.[/]");
+            Environment.ExitCode = 1;
         }
     }
 
