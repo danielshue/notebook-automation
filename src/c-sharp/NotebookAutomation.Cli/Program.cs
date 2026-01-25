@@ -330,7 +330,7 @@ internal class Program
             return false;
 
         // If help is the first argument or only preceded by global options, it's root help
-        var knownCommands = new[] { "tag", "vault", "video-notes", "video-transcripts", "pdf-notes", "generate-markdown", "config" };
+        var knownCommands = new[] { "tag", "vault", "video-notes", "video-transcripts", "pdf-notes", "generate-markdown", "config", "copilot", "refresh-token" };
 
         for (int i = 0; i < helpIndex; i++)
         {

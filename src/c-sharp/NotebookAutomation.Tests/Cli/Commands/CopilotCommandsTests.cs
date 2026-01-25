@@ -156,10 +156,10 @@ public class CopilotCommandsTests
     }
 
     /// <summary>
-    /// Tests that RegisterCommands adds the ask command.
+    /// Tests that RegisterCommands adds the ask command as a subcommand of copilot.
     /// </summary>
     [TestMethod]
-    public void RegisterCommands_AddsAskCommand()
+    public void RegisterCommands_AddsAskCommandUnderCopilot()
     {
         // Arrange
         var rootCommand = new RootCommand("Test root command");
@@ -168,9 +168,16 @@ public class CopilotCommandsTests
         copilotCommands!.RegisterCommands(rootCommand);
 
         // Assert
-        var askCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "ask");
-        Assert.IsNotNull(askCommand, "Ask command should be added to root command");
+        var copilotCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "copilot");
+        Assert.IsNotNull(copilotCommand, "Copilot command should exist");
+
+        var askCommand = copilotCommand.Subcommands.FirstOrDefault(c => c.Name == "ask");
+        Assert.IsNotNull(askCommand, "Ask command should be added as subcommand of copilot");
         Assert.AreEqual("Ask a one-shot question to the AI", askCommand.Description);
+
+        // Verify ask is NOT at root level
+        var rootAskCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "ask");
+        Assert.IsNull(rootAskCommand, "Ask command should NOT be at root level");
     }
 
     /// <summary>

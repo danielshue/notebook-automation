@@ -105,9 +105,7 @@ public class CopilotCommands
                 context.GetCancellationToken());
         });
 
-        rootCommand.AddCommand(copilotCommand);
-
-        // Create 'ask' command
+        // Create 'ask' subcommand under copilot
         var askCommand = new Command("ask", "Ask a one-shot question to the AI");
 
         var questionArgument = new Argument<string>(
@@ -145,7 +143,9 @@ public class CopilotCommands
                 context.GetCancellationToken());
         });
 
-        rootCommand.AddCommand(askCommand);
+        copilotCommand.AddCommand(askCommand);
+
+        rootCommand.AddCommand(copilotCommand);
     }
 
     /// <summary>
