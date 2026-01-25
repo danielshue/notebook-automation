@@ -1,215 +1,49 @@
 ---
-applyTo: "**"
+description: Guidance for generating C# code in this repository.
+applyTo: "**/*.cs"
 ---
 
-# GitHub Copilot Code Generation Instructions
+# GitHub Copilot Code Generation Instructions (C#)
 
-## Code Structure and Philosophy
+## Goals
 
-- Write maintainable, readable code that prioritizes clarity over cleverness
-- Follow SOLID principles in object-oriented design
-- Optimize for developer experience and code readability
-- Create modular, loosely coupled components that can be easily tested and extended
-- Favor composition over inheritance
-- Use appropriate design patterns when applicable
-- Follow the Dependency Inversion Principle - depend on abstractions, not implementations
+- Produce maintainable, readable code that matches this repo’s style.
+- Prefer clear architecture and testability over cleverness.
+- Keep changes minimal and focused on the ask.
 
-## Modern C# Code Generation Guidelines
+## Project Conventions
 
-### File Structure
-
-- **Always use file-scoped namespaces** for new files:
-
-  ```csharp
-  namespace NotebookAutomation.Core.Services;
-
-  public class MyService
-  {
-      // Class content
-  }
-  ```
-
-### Class Construction Patterns
-
-- **Prefer primary constructors** for classes that primarily initialize dependencies:
-
-  ```csharp
-  public class DocumentProcessor(ILogger<DocumentProcessor> logger, AppConfig config)
-  {
-      private readonly ILogger<DocumentProcessor> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-      private readonly AppConfig _config = config ?? throw new ArgumentNullException(nameof(config));
-
-      public async Task ProcessAsync(string filePath) => await ProcessDocumentAsync(filePath);
-  }
-  ```
-
-- **Use traditional constructors** for complex initialization logic:
-
-  ```csharp
-  public class DatabaseService
-  {
-      private readonly IDbConnection _connection;
-
-      public DatabaseService(string connectionString)
-      {
-          _connection = CreateConnection(connectionString);
-          _connection.Open();
-          InitializeSchema();
-      }
-  }
-  ```
-
-### Data Classes and Records
-
-- **Use record types** for immutable data:
-
-  ```csharp
-  public record CourseMetadata(string Name, string Code, DateTime StartDate);
-  public record struct Point(double X, double Y);
-  ```
-
-- **Use primary constructors with classes** for mutable data with behavior:
-
-  ```csharp
-  public class Student(string name, int age)
-  {
-      public string Name { get; set; } = name;
-      public int Age { get; set; } = age;
-      public List<Course> Courses { get; } = [];
-
-      public void EnrollIn(Course course) => Courses.Add(course);
-  }
-  ```
-
-### Collection and Object Initialization
-
-- **Use collection expressions** for arrays and lists:
-
-  ```csharp
-  string[] extensions = [".md", ".txt", ".html"];
-  List<int> numbers = [1, 2, 3, 4, 5];
-  Dictionary<string, int> counts = [];
-  ```
-
-- **Use target-typed new** where type is clear:
-
-  ```csharp
-  List<string> items = new();
-  Dictionary<string, object> metadata = new();
-  ```
-
-### Pattern Matching and Conditionals
-
-- **Use switch expressions** for value transformations:
-
-  ```csharp
-  string GetFileType(string extension) => extension.ToLower() switch
-  {
-      ".md" => "Markdown",
-      ".txt" => "Text",
-      ".html" => "HTML",
-      _ => "Unknown"
-  };
-  ```
-
-- **Use pattern matching** in conditionals:
-
-  ```csharp
-  if (result is { IsSuccess: true, Data: var data })
-  {
-      ProcessData(data);
-  }
-  ```
-
-### Exception Handling
-
-- **Use specific exception types** with modern syntax:
-
-  ```csharp
-  ArgumentException.ThrowIfNullOrEmpty(filePath);
-  ObjectDisposedException.ThrowIf(_disposed, this);
-  ```
-
-## Error Handling
-
-- Use explicit try/catch blocks with specific exception types (C#) or try/except (Python)
-- Include contextual information in error messages
-- Propagate exceptions appropriately (don't hide errors)
-- Log errors with appropriate severity levels
-
-### Global Usings Maintenance
-
-- Place all commonly used namespaces in `GlobalUsings.cs` to reduce repetitive imports.
-- Organize namespaces alphabetically for readability.
-- Regularly review and update the file to ensure it reflects current project needs.
-- Example structure:
-
-  ```csharp
-  global using System;
-  global using System.Collections.Generic;
-  global using System.Linq;
-  global using Microsoft.Extensions.Logging;
-  ```
-
-## Performance Guidelines
-
-- Prefer readable code over premature optimization
-- Document performance-critical sections
-- Select appropriate data structures for operations
-- Include time/space complexity notes for algorithms when relevant
-
-### Best Practices Summary
-
-1. **File-scoped namespaces** for all new files
-2. **Primary constructors** for simple dependency injection scenarios
-3. **Records** for immutable data, **classes with primary constructors** for mutable data with behavior
-4. **Collection expressions** for initialization
-5. **Pattern matching** and **switch expressions** for cleaner conditional logic
-6. **Target-typed new** where type inference is clear
-7. **Modern exception throwing** helpers where available
-
-## Reusability
-
-- Parameterize functions instead of hardcoding values
-- Create pure functions when possible (no side effects)
-- Use dependency injection where appropriate
-- Design intuitive interfaces that minimize required knowledge
+- **License header**: For new C# source files, include the standard header:
+  - `// Licensed under the MIT License. See LICENSE file in the project root for full license information.`
+- **Namespaces**: Use **file-scoped namespaces** for new files.
+- **Modern C#**: Prefer primary constructors for DI-style classes when initialization is simple.
+- **Dependencies**: Depend on abstractions (interfaces), keep components loosely coupled.
 
 ## Code Style
 
-- Follow PEP 8 style guidelines (for Python)
-- Group imports in standard order: standard library, third-party, local
-- Use meaningful whitespace to improve readability
-- Include inline comments for complex logic or non-obvious implementations
-- Explain "why" rather than "what" in comments
+- Use `ArgumentNullException.ThrowIfNull(...)` / `ArgumentException.ThrowIfNullOrEmpty(...)` where appropriate.
+- Prefer `switch` expressions and pattern matching for simple branching.
+- Prefer collection expressions (e.g., `[]`, `[1, 2, 3]`) where they improve readability.
+- Avoid adding unnecessary `using` directives when a project `GlobalUsings.cs` already covers them.
 
-## Security Best Practices
+## Error Handling
 
-- Never hardcode sensitive information (credentials, API keys)
-- Sanitize user inputs before processing
-- Use safe APIs for risky operations (file handling, network calls)
-- Document security assumptions and requirements
-- Use principle of least privilege when accessing resources
+- Catch exceptions only when you can add context or take corrective action.
+- Use specific exception types.
+- Include actionable messages (what failed + which input/path/value).
 
-## Security Documentation
+## Design Guidance
 
-- Document security assumptions and requirements in a dedicated section of the README or a separate SECURITY.md file.
-- Example:
+- Follow SOLID with a strong preference for composition.
+- Keep public APIs small and explicit; avoid “god” services.
+- Use records for immutable DTOs and configuration-shaped data.
 
-  ```markdown
-  ## Security Assumptions
-  - All user inputs are sanitized before processing.
-  - Sensitive data is stored securely using encryption.
+## Logging
 
-  ## Security Requirements
-  - Use HTTPS for all network communications.
-  - Implement role-based access control for sensitive operations.
-  ```
+- When logging, include context (paths, counts, identifiers) but do not log secrets.
+- Prefer structured logging patterns when available.
 
-## Common Patterns to Implement
+## Documentation
 
-- Configuration management from environment variables
-- Resource cleanup with context managers
-- Logging with appropriate levels
-- Factory methods for complex object creation
-- Separation of data access from business logic
+- Add XML doc comments for public types/methods when the intent is not obvious.
+- Keep comments focused on **why**, not **what**.

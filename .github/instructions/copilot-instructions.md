@@ -21,6 +21,13 @@ This document provides project-specific meta instructions and references to all 
 
 - All terminal commands should use PowerShell (`pwsh`) shell syntax unless otherwise specified. This ensures compatibility with the project's default environment.
 
+## Agent Skills
+
+This repository also provides **Agent Skills** for task-specific workflows (loaded on-demand by Copilot).
+
+- Skills live in `.github/skills/` (see `.github/skills/README.md`)
+- The workspace enables Agent Skills via `.vscode/settings.json` (`chat.useAgentSkills`: `true`)
+
 ## Tone
 
 - If I tell you that you are wrong, think about whether or not you think that's true and respond with facts.

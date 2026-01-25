@@ -15,14 +15,14 @@ The modules provide a comprehensive, well-tested library of functionality for bu
 
 ### Module Categories
 
-| Category | Purpose | Modules |
-|----------|---------|---------|
-| **Core** | Fundamental utilities (logging, platform detection, prerequisites) | 3 |
-| **Build** | .NET and plugin build operations | 2 |
-| **GitHub** | GitHub CLI wrappers and workflow management | 2 |
-| **Release** | Release maintenance and version management | 2 |
-| **Safety** | Rollback tracking and error recovery | 1 |
-| **Quality** | Release notes, checksums, and dependency validation | 3 |
+| Category    | Purpose                                                            | Modules |
+| ----------- | ------------------------------------------------------------------ | ------- |
+| **Core**    | Fundamental utilities (logging, platform detection, prerequisites) | 3       |
+| **Build**   | .NET and plugin build operations                                   | 2       |
+| **GitHub**  | GitHub CLI wrappers, artifacts, and release maintenance            | 3       |
+| **Version** | Version management and Git tagging                                 | 1       |
+| **Safety**  | Rollback tracking and error recovery                               | 1       |
+| **Quality** | Release notes, checksums, and dependency validation                | 3       |
 
 **Total: 4,122 lines of reusable functionality across 13 modules**
 
@@ -62,7 +62,7 @@ External dependency validation:
 - `Test-DotNetSDK` - .NET SDK validation with optional minimum version
 - `Test-NodeJS` - Node.js validation with optional minimum version
 
-### Build Modules (810 lines, 21.0%)
+### Build Modules (810 lines, 19.6%)
 
 #### Build/DotNetBuild.psm1 (432 lines)
 
@@ -88,7 +88,7 @@ Obsidian plugin npm operations and vault deployment:
 
 **Key Feature**: Automated vault deployment for rapid development iteration.
 
-### GitHub Modules (712 lines, 18.4%)
+### GitHub Modules (973 lines, 23.6%)
 
 #### GitHub/CLI.psm1 (400 lines)
 
@@ -113,9 +113,7 @@ GitHub Actions artifact download and management:
 
 **Key Feature**: Cross-platform artifact handling with automatic permission management.
 
-### Release Modules (261 lines, 6.8%)
-
-#### Release/ReleaseManagement.psm1 (261 lines)
+#### GitHub/ReleaseManagement.psm1 (261 lines)
 
 GitHub release management and maintenance operations:
 
@@ -125,7 +123,7 @@ GitHub release management and maintenance operations:
 
 **Key Feature**: Automated release hygiene with configurable retention policies (keep recent + milestones) and API sync capabilities to fix incorrectly marked releases.
 
-### Version Modules (378 lines, 9.8%)
+### Version Modules (378 lines, 9.2%)
 
 #### Version/Management.psm1 (378 lines)
 
@@ -140,7 +138,7 @@ Version synchronization and Git tag management:
 
 **Key Feature**: Ensures version consistency across npm, Obsidian, and Git with support for stable and pre-release versions.
 
-### Safety Modules (444 lines, 11.5%)
+### Safety Modules (444 lines, 10.8%)
 
 #### Safety/Rollback.psm1 (444 lines)
 
@@ -157,7 +155,7 @@ Rollback tracking and error recovery for version management operations:
 
 **Key Feature**: Phase-based rollback system (PreCommit vs PostCommit) with automatic workspace state tracking and commit/tag/release reversal.
 
-### Quality Modules (888 lines, 23.0%)
+### Quality Modules (888 lines, 21.5%)
 
 #### Quality/ReleaseNotes.psm1 (293 lines)
 
@@ -204,9 +202,7 @@ modules/
 │
 ├── GitHub/
 │   ├── CLI.psm1            # GitHub CLI wrappers (releases, workflows, artifacts)
-│   └── Artifacts.psm1      # Artifact download and management
-│
-├── Release/
+│   ├── Artifacts.psm1      # Artifact download and management
 │   └── ReleaseManagement.psm1  # Release maintenance and pruning
 │
 ├── Version/
@@ -419,20 +415,20 @@ Invoke-GhReleaseDelete -Tag "v1.0.0" -Confirm:$false
 - `Invoke-GhReleaseCreate` - Creates a GitHub release with assets
 - `Invoke-GhReleaseDelete` - Deletes a GitHub release
 
-### Release/ReleaseManagement Module
+### GitHub/ReleaseManagement Module
 
 Provides release maintenance and pruning operations:
 
 ```powershell
-Import-Module (Join-Path $PSScriptRoot "modules\Release\ReleaseManagement.psm1") -Force
+Import-Module (Join-Path $PSScriptRoot "modules\GitHub\ReleaseManagement.psm1") -Force
 
 # Get statistics about beta releases
 Get-BetaReleaseStats
 
 # Fix beta releases incorrectly marked as stable (for API sync)
 $releases = gh release list --limit 100 --json tagName,isPrerelease | ConvertFrom-Json
-$betasMarkedStable = $releases | Where-Object { 
-    $_.tagName -match '^v\d+\.\d+\.\d+-beta\.\d+$' -and -not $_.isPrerelease 
+$betasMarkedStable = $releases | Where-Object {
+    $_.tagName -match '^v\d+\.\d+\.\d+-beta\.\d+$' -and -not $_.isPrerelease
 }
 foreach ($release in $betasMarkedStable) {
     Set-ReleasePrerelease -Tag $release.tagName -Prerelease $true
@@ -555,7 +551,7 @@ Complete version management solution with release automation.
 - `Core/Platform` - Cross-platform utilities
 - `GitHub/CLI` - Workflow monitoring, release management
 - `GitHub/Artifacts` - CI artifact downloads
-- `Release/ReleaseManagement` - Release pruning and maintenance
+- `GitHub/ReleaseManagement` - Release pruning and maintenance
 - `Version/Management` - Version synchronization, Git tags
 - `Safety/Rollback` - Complete rollback system
 - `Quality/ReleaseNotes` - AI release notes generation
@@ -730,17 +726,16 @@ When adding new modules or functions:
 
 ### Statistics
 
-The module library contains **4,122 lines of reusable functionality across 13 modules**, organized into 7 functional categories:
+The module library contains **4,122 lines of reusable functionality across 13 modules**, organized into 6 functional categories:
 
 | Category | Modules | Lines | % of Total |
-|----------|---------|-------|------------|
-| Core | 3 | 629 | 15.3% |
-| Build | 2 | 810 | 19.7% |
-| GitHub | 2 | 712 | 17.3% |
-| Release | 1 | 261 | 6.3% |
-| Version | 1 | 378 | 9.2% |
-| Safety | 1 | 444 | 10.8% |
-| Quality | 3 | 888 | 21.5% |
+| -------- | ------- | ----- | ---------- |
+| Core     | 3       | 629   | 15.3%      |
+| Build    | 2       | 810   | 19.7%      |
+| GitHub   | 3       | 973   | 23.6%      |
+| Version  | 1       | 378   | 9.2%       |
+| Safety   | 1       | 444   | 10.8%      |
+| Quality  | 3       | 888   | 21.5%      |
 
 ### Module Quality Standards
 

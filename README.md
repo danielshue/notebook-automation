@@ -332,16 +332,17 @@ The toolkit includes sophisticated synchronization capabilities that bridge your
 
 | Section                                                      | Description                                                   |
 | ------------------------------------------------------------ | ------------------------------------------------------------- |
+| [**Documentation Home**](docs/index.md)                      | Main documentation portal with quick navigation               |
+| [**Download**](docs/download.md)                             | Get the latest release for your platform                      |
 | [**Getting Started**](docs/getting-started/index.md)         | Installation, setup, and first steps                          |
+| [**Features**](docs/features/index.md)                       | Complete feature overview and capabilities                    |
 | [**User Guide**](docs/user-guide/index.md)                   | Comprehensive usage documentation                             |
 | [**Configuration**](docs/configuration/index.md)             | Settings and customization options                            |
-| [**Migration Guide**](docs/migration-guide.md)               | **NEW**: Upgrade from legacy metadata.yaml to new schema      |
-| [**Metadata Schema**](docs/metadata-schema-configuration.md) | **NEW**: Complete metadata-schema.yml configuration reference |
-| [**Plugin Development**](docs/plugin-development.md)         | **NEW**: Extensible resolver development and registry usage   |
 | [**Tutorials**](docs/tutorials/index.md)                     | Step-by-step examples and workflows                           |
-| [**API Reference**](docs/api/index.md)                       | Detailed API documentation                                    |
-| [**Developer Guide**](docs/developer-guide/index.md)         | Building and contributing                                     |
+| [**Developer**](docs/developer/index.md)                     | Architecture, API reference, and contributing                 |
 | [**Troubleshooting**](docs/troubleshooting/index.md)         | Common issues and solutions                                   |
+| [**Changelog**](CHANGELOG.md)                                | Version history and release notes                             |
+| [**Roadmap**](docs/roadmap.md)                               | Upcoming features and development plans                       |
 
 ## 🛠️ System Requirements
 
