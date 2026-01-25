@@ -3,6 +3,7 @@
 using Moq;
 
 using NotebookAutomation.Cli.Services.Copilot;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Tests.Cli.Services.Copilot;
 
@@ -14,12 +15,21 @@ public class NotebookToolsTests
 {
     private Mock<ILogger<NotebookTools>> loggerMock = null!;
     private Mock<IServiceProvider> serviceProviderMock = null!;
+    private AppConfig appConfig = null!;
 
     [TestInitialize]
     public void Initialize()
     {
         loggerMock = new Mock<ILogger<NotebookTools>>();
         serviceProviderMock = new Mock<IServiceProvider>();
+        appConfig = new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                NotebookVaultFullpathRoot = "C:\\TestVault",
+                OnedriveFullpathRoot = "C:\\TestOneDrive"
+            }
+        };
     }
 
     /// <summary>
@@ -29,7 +39,7 @@ public class NotebookToolsTests
     public void Constructor_WithValidParameters_ShouldSucceed()
     {
         // Act
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
 
         // Assert
         Assert.IsNotNull(tools);
@@ -43,7 +53,7 @@ public class NotebookToolsTests
     {
         // Act & Assert
         Assert.ThrowsException<ArgumentNullException>(() =>
-            new NotebookTools(null!, serviceProviderMock.Object));
+            new NotebookTools(null!, serviceProviderMock.Object, appConfig));
     }
 
     /// <summary>
@@ -54,7 +64,18 @@ public class NotebookToolsTests
     {
         // Act & Assert
         Assert.ThrowsException<ArgumentNullException>(() =>
-            new NotebookTools(loggerMock.Object, null!));
+            new NotebookTools(loggerMock.Object, null!, appConfig));
+    }
+
+    /// <summary>
+    /// Tests that the constructor throws when appConfig is null.
+    /// </summary>
+    [TestMethod]
+    public void Constructor_WithNullAppConfig_ShouldThrow()
+    {
+        // Act & Assert
+        Assert.ThrowsException<ArgumentNullException>(() =>
+            new NotebookTools(loggerMock.Object, serviceProviderMock.Object, null!));
     }
 
     /// <summary>
@@ -64,7 +85,7 @@ public class NotebookToolsTests
     public void GetAllTools_AfterRegistration_ShouldReturnTools()
     {
         // Arrange
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
 
         // Act
         var allTools = tools.GetAllTools();
@@ -81,7 +102,7 @@ public class NotebookToolsTests
     public void GetToolsByCategory_WithValidCategory_ShouldReturnTools()
     {
         // Arrange
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
 
         // Act
         var vaultTools = tools.GetToolsByCategory("vault");
@@ -98,7 +119,7 @@ public class NotebookToolsTests
     public void GetToolsByCategory_WithInvalidCategory_ShouldReturnEmpty()
     {
         // Arrange
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
 
         // Act
         var unknownTools = tools.GetToolsByCategory("unknown");
@@ -115,14 +136,13 @@ public class NotebookToolsTests
     public void GetTool_WithValidName_ShouldReturnTool()
     {
         // Arrange
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
 
         // Act
-        var tool = tools.GetTool("vault_generate_index");
+        var tool = tools.GetTool("vault_list_directory");
 
         // Assert
         Assert.IsNotNull(tool);
-        // AIFunction exists and is not null
     }
 
     /// <summary>
@@ -132,7 +152,7 @@ public class NotebookToolsTests
     public void GetTool_WithInvalidName_ShouldReturnNull()
     {
         // Arrange
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
 
         // Act
         var tool = tools.GetTool("nonexistent_tool");
@@ -148,7 +168,7 @@ public class NotebookToolsTests
     public void RegisterAllTools_CalledMultipleTimes_ShouldBeIdempotent()
     {
         // Arrange
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
 
         // Act
         tools.RegisterAllTools();
@@ -167,8 +187,8 @@ public class NotebookToolsTests
     public void RegisterAllTools_ShouldRegisterAllCategories()
     {
         // Arrange
-        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object);
-        var expectedCategories = new[] { "vault", "tag", "pdf", "video", "markdown", "config", "onedrive" };
+        var tools = new NotebookTools(loggerMock.Object, serviceProviderMock.Object, appConfig);
+        var expectedCategories = new[] { "vault", "search", "open", "tag", "pdf", "video", "markdown", "config", "onedrive" };
 
         // Act
         tools.RegisterAllTools();

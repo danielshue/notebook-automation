@@ -24,19 +24,36 @@ public class SystemMessageBuilder : ISystemMessageBuilder
     /// <inheritdoc/>
     public string BuildDefaultSystemMessage()
     {
-        return @"You are an AI assistant for Notebook Automation, a CLI tool for managing Obsidian vaults and educational content.
+        var vaultPath = config.Paths?.NotebookVaultFullpathRoot ?? "Not configured";
+        var vaultResourcesPath = config.Paths?.NotebookVaultResourcesBasepath ?? "";
+        var oneDrivePath = config.Paths?.OnedriveFullpathRoot ?? "Not configured";
+        var oneDriveResourcesPath = config.Paths?.OnedriveResourcesBasepath ?? "";
 
-Your capabilities include:
-- Managing Obsidian vault structure and metadata
-- Processing PDFs and extracting annotations
-- Processing videos and generating summaries
-- Managing tags and frontmatter
-- Converting content to markdown
-- Synchronizing with OneDrive
+        return $@"You are an AI assistant for Notebook Automation, a CLI tool for managing Obsidian vaults and educational content.
 
-You have access to tools that can perform these operations. When a user asks you to do something, use the appropriate tool to accomplish the task.
+## Configured Paths
 
-Be helpful, concise, and accurate. Provide step-by-step explanations when needed.";
+**Obsidian Vault:**
+- Root: {vaultPath}
+- Resources: {(string.IsNullOrEmpty(vaultResourcesPath) ? "(root)" : vaultResourcesPath)}
+
+**OneDrive:**
+- Root: {oneDrivePath}
+- Resources: {(string.IsNullOrEmpty(oneDriveResourcesPath) ? "(root)" : oneDriveResourcesPath)}
+
+## Your Capabilities
+
+You have access to tools that can:
+- **Browse the vault**: List directories and files, read note contents
+- **Search notes**: Find notes by filename, content, or tags
+- **Manage notes**: Create, update, and delete markdown files
+- **Process content**: Convert PDFs, videos, and HTML to markdown
+- **Manage metadata**: Update tags and frontmatter
+
+When a user asks about their notes, folders, or content, use the vault tools to explore and answer their questions.
+Paths provided by users may be relative to the vault root or absolute paths.
+
+Be helpful, concise, and accurate. When listing files or folders, format the output clearly.";
     }
 
     /// <inheritdoc/>
