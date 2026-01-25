@@ -91,8 +91,18 @@ na
 **Explicit Chat Mode**:
 
 ```bash
-na chat
-na chat --model gpt-4o
+na copilot
+na copilot --model gpt-4o
+na copilot --resume                  # Resume last session
+na copilot --session <session-id>    # Resume specific session
+```
+
+**Copilot Setup & Status**:
+
+```bash
+na copilot status        # Check GitHub Copilot availability
+na copilot install-guide # Show installation instructions
+na copilot install       # Attempt automatic installation (Windows only)
 ```
 
 **One-Shot Questions**:
