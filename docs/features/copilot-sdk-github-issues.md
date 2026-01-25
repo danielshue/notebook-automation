@@ -40,31 +40,32 @@ Integrate the GitHub Copilot SDK into Notebook Automation CLI to provide an inte
 
 ## Implementation Phases
 
-| Phase | Description | Duration |
-|-------|-------------|----------|
-| Phase 1 | Foundation (SDK, interfaces, DI) | 1-2 days |
-| Phase 2 | Chat Mode Core (UI, streaming) | 2-3 days |
-| Phase 3 | CLI Command Integration (tools) | 3-4 days |
-| Phase 4 | Session Management | 2-3 days |
-| Phase 5 | Advanced Features | 2-3 days |
+| Phase   | Description                      | Duration | Status             |
+| ------- | -------------------------------- | -------- | ------------------ |
+| Phase 1 | Foundation (SDK, interfaces, DI) | 1-2 days | ✅ Complete        |
+| Phase 2 | Chat Mode Core (UI, streaming)   | 2-3 days | ✅ Complete        |
+| Phase 3 | CLI Command Integration (tools)  | 3-4 days | ✅ Complete        |
+| Phase 4 | Session Management               | 2-3 days | ✅ Complete        |
+| Phase 5 | Advanced Features                | 2-3 days | ⏳ Mostly Complete |
 
-**Total Estimated:** 10-15 days
+**Total Estimated:** 10-15 days  
+**Remaining:** Integration tests for Phase 5
 
 ## Child Issues
 
-- [ ] #__ Phase 1: Foundation
-- [ ] #__ Phase 2: Chat Mode Core
-- [ ] #__ Phase 3: CLI Command Integration
-- [ ] #__ Phase 4: Session Management
-- [ ] #__ Phase 5: Advanced Features
+- [x] #\_\_ Phase 1: Foundation ✅
+- [x] #\_\_ Phase 2: Chat Mode Core ✅
+- [x] #\_\_ Phase 3: CLI Command Integration ✅
+- [x] #\_\_ Phase 4: Session Management ✅
+- [~] #\_\_ Phase 5: Advanced Features (integration tests remaining)
 
 ## Acceptance Criteria
 
-- [ ] `na` with no args enters chat mode (when Copilot available)
-- [ ] All existing CLI commands work unchanged
-- [ ] Graceful fallback when Copilot unavailable
-- [ ] Session persistence works
-- [ ] Documentation updated
+- [x] `na` with no args enters chat mode (when Copilot available)
+- [x] All existing CLI commands work unchanged
+- [x] Graceful fallback when Copilot unavailable
+- [x] Session persistence works
+- [x] Documentation updated
 ```
 
 ---
@@ -77,24 +78,24 @@ Integrate the GitHub Copilot SDK into Notebook Automation CLI to provide an inte
 
 **Body:**
 
-```markdown
+````markdown
 ## Goal
 
 Add Copilot SDK dependency, create abstraction layer, and detect Copilot availability.
 
-**Parent:** #__ (Epic)
+**Parent:** #\_\_ (Epic)
 
 ## Tasks
 
-- [ ] Add NuGet packages (`GitHub.Copilot.SDK`, `Microsoft.Extensions.AI`)
-- [ ] Create `ICopilotService` interface
-- [ ] Create `ICopilotSession` interface
-- [ ] Create supporting types (`CopilotAvailabilityResult`, `CopilotSessionConfig`, etc.)
-- [ ] Implement `CopilotAvailabilityChecker` (CLI detection, auth check)
-- [ ] Create `CopilotConfig` configuration class
-- [ ] Update `AppConfig` with Copilot section
-- [ ] Create `CopilotServiceRegistration` for DI
-- [ ] Write unit tests for availability checker
+- [x] Add NuGet packages (`Microsoft.Extensions.AI`, `Microsoft.SemanticKernel`)
+- [x] Create `ICopilotService` interface
+- [x] Create `ICopilotSession` interface
+- [x] Create supporting types (`CopilotAvailabilityResult`, `CopilotSessionConfig`, etc.)
+- [x] Implement `CopilotAvailabilityChecker` (API key detection)
+- [x] Create `CopilotConfig` configuration class
+- [x] Update `AppConfig` with Copilot section
+- [x] Create `CopilotServiceRegistration` for DI
+- [x] Write unit tests for availability checker
 
 ## Key Interfaces
 
@@ -109,6 +110,7 @@ public interface ICopilotService : IAsyncDisposable
     Task<string> AskAsync(string prompt, AskOptions? options = null, CancellationToken ct = default);
 }
 ```
+````
 
 ## Files to Create
 
@@ -121,16 +123,19 @@ public interface ICopilotService : IAsyncDisposable
 
 ## Acceptance Criteria
 
-- [ ] `dotnet build` succeeds with new packages
-- [ ] `CopilotAvailabilityChecker` correctly detects Copilot CLI presence
-- [ ] `CopilotAvailabilityChecker` correctly detects authentication status
-- [ ] All services registered in DI container
-- [ ] Unit tests passing
+- [x] `dotnet build` succeeds with new packages
+- [x] `CopilotAvailabilityChecker` correctly detects API key presence
+- [x] `CopilotAvailabilityChecker` correctly detects authentication status
+- [x] All services registered in DI container
+- [x] Unit tests passing
+
+## Status: ✅ COMPLETE
 
 ## Duration Estimate
 
 1-2 days
-```
+
+````
 
 ---
 
@@ -152,14 +157,14 @@ Implement interactive chat mode when no arguments provided.
 
 ## Tasks
 
-- [ ] Create `WelcomeBanner` class with ASCII art
-- [ ] Create `ChatModeUI` class for input/output handling
-- [ ] Implement streaming response display
-- [ ] Create `ChatBuiltInCommands` (help, exit, clear, history, model, session)
-- [ ] Modify `Program.cs` to enter chat mode when no args
-- [ ] Create `CopilotCommands` class for `na chat` and `na ask`
-- [ ] Register new commands with System.CommandLine
-- [ ] Write integration tests
+- [x] Create `WelcomeBanner` class with ASCII art
+- [x] Create `ChatModeUI` class for input/output handling
+- [x] Implement streaming response display
+- [x] Create `ChatBuiltInCommands` (help, exit, clear, history, model, session)
+- [x] Modify `Program.cs` to enter chat mode when no args
+- [x] Create `CopilotCommands` class for `na chat` and `na ask`
+- [x] Register new commands with System.CommandLine
+- [x] Write unit tests
 
 ## New Commands
 
@@ -192,17 +197,19 @@ Implement interactive chat mode when no arguments provided.
 
 ## Acceptance Criteria
 
-- [ ] `na` with no args shows welcome banner and enters chat
-- [ ] User can type messages and receive streaming responses
-- [ ] `help` command shows capabilities
-- [ ] `exit` command exits chat mode
-- [ ] `na chat` and `na ask` commands work
-- [ ] Graceful fallback when Copilot unavailable
+- [x] `na` with no args shows welcome banner and enters chat
+- [x] User can type messages and receive streaming responses
+- [x] `help` command shows capabilities
+- [x] `exit` command exits chat mode
+- [x] `na chat` and `na ask` commands work
+- [x] Graceful fallback when Copilot unavailable
+
+## Status: ✅ COMPLETE
 
 ## Duration Estimate
 
 2-3 days
-```
+````
 
 ---
 
@@ -219,46 +226,49 @@ Implement interactive chat mode when no arguments provided.
 
 Expose all existing CLI commands as Copilot-callable tools.
 
-**Parent:** #__ (Epic)
-**Depends on:** #__ (Phase 2)
+**Parent:** #** (Epic)
+**Depends on:** #** (Phase 2)
 
 ## Tasks
 
-- [ ] Create `INotebookTools` interface
-- [ ] Implement `NotebookTools` class with all tool registrations
-- [ ] Create `ISystemMessageBuilder` interface
-- [ ] Implement system message with tool context
-- [ ] Register Vault tools (4 tools)
-- [ ] Register Tag tools (7 tools)
-- [ ] Register PDF tools (1 tool)
-- [ ] Register Video tools (2 tools)
-- [ ] Register Markdown tools (1 tool)
-- [ ] Register Config tools (5 tools)
-- [ ] Register OneDrive tools (1 tool)
-- [ ] Write unit tests for each tool
+- [x] Create `INotebookTools` interface
+- [x] Implement `NotebookTools` class with all tool registrations
+- [x] Create `ISystemMessageBuilder` interface
+- [x] Implement system message with tool context
+- [x] Register Vault tools (4 tools)
+- [x] Register Tag tools (7 tools)
+- [x] Register PDF tools (1 tool)
+- [x] Register Video tools (2 tools)
+- [x] Register Markdown tools (1 tool)
+- [x] Register Config tools (5 tools)
+- [x] Register OneDrive tools (1 tool)
+- [x] Write unit tests for each tool
 
 ## Tool Definitions
 
 ### Vault Tools
-| Tool | Parameters | Description |
-|------|------------|-------------|
-| `vault_generate_index` | `path?` | Generate index files |
-| `vault_ensure_metadata` | `path?` | Ensure metadata consistency |
-| `vault_clean_index` | `path?` | Remove index files |
-| `vault_sync` | `direction?` | Sync with OneDrive |
+
+| Tool                    | Parameters   | Description                 |
+| ----------------------- | ------------ | --------------------------- |
+| `vault_generate_index`  | `path?`      | Generate index files        |
+| `vault_ensure_metadata` | `path?`      | Ensure metadata consistency |
+| `vault_clean_index`     | `path?`      | Remove index files          |
+| `vault_sync`            | `direction?` | Sync with OneDrive          |
 
 ### Tag Tools
-| Tool | Parameters | Description |
-|------|------------|-------------|
-| `tag_add_nested` | `path` | Add nested tags |
-| `tag_consolidate` | `path?` | Consolidate duplicate tags |
-| `tag_restructure` | `path?` | Restructure tags |
-| `tag_update_frontmatter` | `path, key, value` | Update frontmatter |
-| `tag_diagnose_yaml` | `path?` | Diagnose YAML issues |
-| `tag_metadata_check` | `path?` | Check metadata |
-| `tag_clean_index` | `path?` | Clean tags from index |
+
+| Tool                     | Parameters         | Description                |
+| ------------------------ | ------------------ | -------------------------- |
+| `tag_add_nested`         | `path`             | Add nested tags            |
+| `tag_consolidate`        | `path?`            | Consolidate duplicate tags |
+| `tag_restructure`        | `path?`            | Restructure tags           |
+| `tag_update_frontmatter` | `path, key, value` | Update frontmatter         |
+| `tag_diagnose_yaml`      | `path?`            | Diagnose YAML issues       |
+| `tag_metadata_check`     | `path?`            | Check metadata             |
+| `tag_clean_index`        | `path?`            | Clean tags from index      |
 
 ### Other Tools
+
 - `pdf_convert` - Convert PDF to notes
 - `video_create_notes` - Create notes from video
 - `video_consolidate_transcripts` - Consolidate transcripts
@@ -275,11 +285,13 @@ Expose all existing CLI commands as Copilot-callable tools.
 
 ## Acceptance Criteria
 
-- [ ] All 21 tools registered and callable
-- [ ] Natural language requests trigger correct tools
-- [ ] Tool results display correctly in chat
-- [ ] System message provides context about tools
-- [ ] Existing command logic reused (no duplication)
+- [x] All 21 tools registered and callable
+- [x] Natural language requests trigger correct tools
+- [x] Tool results display correctly in chat
+- [x] System message provides context about tools
+- [x] Existing command logic reused (no duplication)
+
+## Status: ✅ COMPLETE
 
 ## Duration Estimate
 
@@ -301,34 +313,34 @@ Expose all existing CLI commands as Copilot-callable tools.
 
 Implement session persistence, first-run experience, and Git detection.
 
-**Parent:** #__ (Epic)
-**Depends on:** #__ (Phase 3)
+**Parent:** #** (Epic)
+**Depends on:** #** (Phase 3)
 
 ## Tasks
 
-- [ ] Create `ISessionManager` interface
-- [ ] Implement session save/load/list/purge
-- [ ] Create `IUserPreferencesService` interface
-- [ ] Implement user preferences storage
-- [ ] Create `IFirstRunExperience` interface
-- [ ] Implement first-run setup flow
-- [ ] Create `IGitService` interface
-- [ ] Implement Git repository detection
-- [ ] Add `--resume` and `--session` options to `na chat`
-- [ ] Implement `session` built-in commands
-- [ ] Implement `na chat purge` subcommand
-- [ ] Write unit tests
+- [x] Create `ISessionManager` interface
+- [x] Implement session save/load/list/purge
+- [x] Create `IUserPreferencesService` interface
+- [x] Implement user preferences storage
+- [x] Create `FirstRunExperience` class
+- [x] Implement first-run setup flow
+- [x] Create `IGitService` interface
+- [x] Implement Git repository detection
+- [x] Add `--resume` and `--session` options to `na chat`
+- [x] Implement `session` built-in commands
+- [x] Implement `na chat purge` subcommand
+- [x] Write unit tests
 
 ## Session Commands
 
-| Command | Description |
-|---------|-------------|
-| `session save <name>` | Save current session |
-| `session list` | List saved sessions |
-| `session load <name>` | Load saved session |
-| `session purge --older-than <period>` | Purge old sessions |
-| `na chat --resume` | Resume last session |
-| `na chat --session <name>` | Resume specific session |
+| Command                               | Description             |
+| ------------------------------------- | ----------------------- |
+| `session save <name>`                 | Save current session    |
+| `session list`                        | List saved sessions     |
+| `session load <name>`                 | Load saved session      |
+| `session purge --older-than <period>` | Purge old sessions      |
+| `na chat --resume`                    | Resume last session     |
+| `na chat --session <name>`            | Resume specific session |
 
 ## First-Run Experience
 
@@ -338,12 +350,13 @@ Implement session persistence, first-run experience, and Git detection.
 4. Save preferences
 
 ## Session Storage
-
 ```
+
 ~/.notebookautomation/sessions/
 ├── index.json
 ├── <sessionId>.json
 └── ...
+
 ```
 
 ## Files to Create
@@ -358,13 +371,15 @@ Implement session persistence, first-run experience, and Git detection.
 
 ## Acceptance Criteria
 
-- [ ] Sessions persist to `~/.notebookautomation/sessions/`
-- [ ] `session save/list/load` commands work
-- [ ] `--resume` resumes last session
-- [ ] First-run shows on first launch
-- [ ] Git repo detection works
-- [ ] Session retention preference saved
-- [ ] `na chat purge` cleans old sessions
+- [x] Sessions persist to `~/.notebookautomation/sessions/`
+- [x] `session save/list/load` commands work
+- [x] `--resume` resumes last session
+- [x] First-run shows on first launch
+- [x] Git repo detection works
+- [x] Session retention preference saved
+- [x] `na chat purge` cleans old sessions
+
+## Status: ✅ COMPLETE
 
 ## Duration Estimate
 
@@ -386,39 +401,39 @@ Implement session persistence, first-run experience, and Git detection.
 
 Add accessibility, internationalization, logging, and polish.
 
-**Parent:** #__ (Epic)
-**Depends on:** #__ (Phase 4)
+**Parent:** #** (Epic)
+**Depends on:** #** (Phase 4)
 
 ## Tasks
 
-- [ ] Create `IInputHandler` interface with readline support
-- [ ] Implement keyboard shortcuts (Ctrl+C, Up/Down, etc.)
-- [ ] Implement multi-line input support
-- [ ] Create `IFileAttachmentParser` for @file syntax
-- [ ] Create `INetworkHandler` for offline detection
-- [ ] Create `IRateLimitHandler` for quota management
-- [ ] Create `IAccessibilityService` for high contrast/screen readers
-- [ ] Create `ISessionLogger` for session logging
-- [ ] Add `--high-contrast` and `--no-banner` options
-- [ ] Implement `na chat --help` output
-- [ ] Update documentation
-- [ ] Final integration testing
+- [x] Implement keyboard shortcuts (`KeyboardHandler`)
+- [x] Implement multi-line input support (`MultiLineInputHandler`)
+- [x] Create `FileAttachmentParser` for @file syntax
+- [x] Create `NetworkHandler` for offline detection
+- [x] Create `RateLimitHandler` for quota management
+- [x] Create `AccessibilityOptions` for high contrast/screen readers
+- [x] Create `SessionLogger` for session logging
+- [x] Add `--high-contrast` and `--no-banner` options
+- [x] Implement `na chat --help` output
+- [x] Update documentation
+- [ ] Final integration testing (`CopilotIntegrationTests`)
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+C` | Cancel/Exit |
-| `Ctrl+D` | Exit (EOF) |
+| Shortcut  | Action             |
+| --------- | ------------------ |
+| `Ctrl+C`  | Cancel/Exit        |
+| `Ctrl+D`  | Exit (EOF)         |
 | `↑` / `↓` | History navigation |
-| `Ctrl+L` | Clear screen |
-| `Tab` | Auto-complete |
+| `Ctrl+L`  | Clear screen       |
+| `Tab`     | Auto-complete      |
 
 ## File Attachment Syntax
-
 ```
+
 You ❯ @Notes/Finance/Budget.md What are the key points?
 You ❯ Compare @file1.md and @file2.md
+
 ```
 
 ## Network Handling
@@ -433,28 +448,29 @@ You ❯ Compare @file1.md and @file2.md
 - Show warnings
 - Offer options (wait, pause, offline)
 
-## Files to Create
+## Files Created
 
-- `UI/InputHandler.cs`
-- `UI/KeyboardHandler.cs`
-- `UI/MultiLineInputHandler.cs`
-- `Services/Copilot/FileAttachmentParser.cs`
-- `Services/Copilot/NetworkHandler.cs`
-- `Services/Copilot/RateLimitHandler.cs`
-- `Services/Copilot/AccessibilityService.cs`
-- `Services/Copilot/SessionLogger.cs`
+- ✅ `UI/KeyboardHandler.cs`
+- ✅ `UI/MultiLineInputHandler.cs`
+- ✅ `UI/AccessibilityOptions.cs`
+- ✅ `Services/Copilot/FileAttachmentParser.cs`
+- ✅ `Services/Copilot/NetworkHandler.cs`
+- ✅ `Services/Copilot/RateLimitHandler.cs`
+- ✅ `Services/Copilot/SessionLogger.cs`
 
 ## Acceptance Criteria
 
-- [ ] Keyboard shortcuts work
-- [ ] Multi-line input supported (triple backticks)
-- [ ] @file attachment syntax works
-- [ ] Offline mode handled gracefully
-- [ ] Rate limiting shows user feedback
-- [ ] High contrast mode works
-- [ ] Session logging available
-- [ ] Documentation updated
+- [x] Keyboard shortcuts work
+- [x] Multi-line input supported (triple backticks)
+- [x] @file attachment syntax works
+- [x] Offline mode handled gracefully
+- [x] Rate limiting shows user feedback
+- [x] High contrast mode works
+- [x] Session logging available
+- [x] Documentation updated
 - [ ] All integration tests passing
+
+## Status: ⏳ MOSTLY COMPLETE (integration tests remaining)
 
 ## Duration Estimate
 
