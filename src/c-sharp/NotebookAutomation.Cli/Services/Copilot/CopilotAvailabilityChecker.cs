@@ -48,9 +48,9 @@ public class CopilotAvailabilityChecker(
                 var installHint = instructions.Platform switch
                 {
                     "Windows" => "winget install GitHub.Copilot",
-                    "macOS" => "gh extension install github/gh-copilot",
-                    "Linux" => "gh extension install github/gh-copilot",
-                    _ => "npm install -g @githubnext/github-copilot-cli"
+                    "macOS" => "brew install copilot-cli",
+                    "Linux" => "curl -fsSL https://gh.io/copilot-install | bash",
+                    _ => "npm install -g @github/copilot"
                 };
 
                 return new CopilotAvailabilityResult(
