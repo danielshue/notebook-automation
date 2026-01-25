@@ -145,6 +145,10 @@ TemplateTypes:
       - universal-fields
       - other-template-type
     Type: canonical-type-name    # Canonical type for normalization
+    Prompt: prompt-file-name     # Optional: AI prompt file to use (without .md extension)
+    PathResolution:              # Optional: Input/output path configuration
+      InputRoot: onedrive | vault | cwd
+      OutputRoot: vault | onedrive | cwd | input
     RequiredFields:     # List of required fields for validation
       - field-name-1
       - field-name-2
@@ -153,6 +157,58 @@ TemplateTypes:
         Default: default-value
         Resolver: ResolverName
 ```
+
+### New Properties
+
+#### Prompt Property
+
+Specifies which AI prompt file to use for generating summaries:
+
+```yaml
+TemplateTypes:
+  video-reference:
+    Prompt: video-reference  # Uses prompts/video-reference.md
+  generic-video:
+    Prompt: generic_prompt   # Uses prompts/generic_prompt.md
+```
+
+**Characteristics:**
+- Inherited from base types if not specified
+- Can be overridden via CLI `--prompt` option
+- Falls back to `final_summary_prompt` if not specified
+- File extension (.md) is automatically added
+
+#### PathResolution Property
+
+Configures default input and output path roots for processing:
+
+```yaml
+TemplateTypes:
+  base-template:
+    PathResolution:
+      InputRoot: onedrive    # Read from OneDrive sync folder
+      OutputRoot: vault      # Write to vault structure
+  base-generic:
+    PathResolution:
+      InputRoot: cwd         # Read from current directory
+      OutputRoot: input      # Write adjacent to source file
+```
+
+**InputRoot Options:**
+- `onedrive` - OneDrive sync folder (from config)
+- `vault` - Vault root directory (from config)
+- `cwd` - Current working directory
+
+**OutputRoot Options:**
+- `vault` - Vault root directory (from config)
+- `onedrive` - OneDrive sync folder (from config)
+- `cwd` - Current working directory
+- `input` - Same directory as input file (for ad-hoc processing)
+
+**Characteristics:**
+- Inherited from base types if not specified
+- Enables flexible processing of files outside vault structure
+- `OutputRoot: input` is useful for ad-hoc content processing
 
 ### Example: PDF Reference Template
 
@@ -191,11 +247,47 @@ TemplateTypes:
 
 Template types support recursive inheritance through the `BaseTypes` property:
 
+#### Base Type Templates
+
+The schema includes base template types that provide common defaults:
+
+```yaml
+TemplateTypes:
+  # Base template for MBA course content
+  base-template:
+    Type: note/base
+    Prompt: default_prompt
+    PathResolution:
+      InputRoot: onedrive
+      OutputRoot: vault
+    Fields:
+      publisher:
+        Default: University of Illinois at Urbana-Champaign
+      date-created:
+        Resolver: DateCreatedResolver
+      tags:
+        Default: []
+  
+  # Base template for ad-hoc/generic content
+  base-generic:
+    Type: note/generic
+    Prompt: generic_prompt
+    PathResolution:
+      InputRoot: cwd
+      OutputRoot: input
+    Fields:
+      date-created:
+        Resolver: DateCreatedResolver
+      tags:
+        Default: [generic]
+```
+
 #### Base Type Resolution
 
 - **universal-fields**: Inherits all fields from the `UniversalFields` section
 - **template-type-name**: Inherits all fields from another template type
 - **Recursive**: Base types are resolved recursively, supporting deep inheritance chains
+- **Property Inheritance**: `Prompt` and `PathResolution` properties are inherited from base types
 
 #### Field Inheritance Rules
 

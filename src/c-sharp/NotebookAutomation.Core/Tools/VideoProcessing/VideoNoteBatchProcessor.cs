@@ -82,6 +82,8 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
     /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
     /// <param name="appConfig">The application configuration object.</param>
     /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
+    /// <param name="templateTypeName">Optional template type name to use for processing.</param>
+    /// <param name="promptOverride">Optional prompt file override (name or full path).</param>
     /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>
     public async Task<BatchProcessResult> ProcessVideosAsync(
         string input,
@@ -95,7 +97,9 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
         int? timeoutSeconds = null,
         string? resourcesRoot = null,
         AppConfig? appConfig = null,
-        bool noShareLinks = false)
+        bool noShareLinks = false,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         return await batchProcessor.ProcessDocumentsAsync(
             input,
@@ -111,6 +115,8 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
             appConfig,
             "Video Note",
             "failed_videos.txt",
-            noShareLinks).ConfigureAwait(false);
+            noShareLinks,
+            templateTypeName,
+            promptOverride).ConfigureAwait(false);
     }
 }

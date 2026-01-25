@@ -95,6 +95,8 @@ public class MarkdownNoteBatchProcessor : DocumentNoteBatchProcessor<MarkdownNot
     /// <param name="timeoutSeconds">API timeout in seconds.</param>
     /// <param name="resourcesRoot">Resources root directory.</param>
     /// <param name="noShareLinks">Whether to skip share link generation.</param>
+    /// <param name="templateTypeName">Optional template type name to use for processing.</param>
+    /// <param name="promptOverride">Optional prompt file override (name or full path).</param>
     /// <returns>Tuple containing summary text, token count, and processing time.</returns>
     protected override async Task<(string summaryText, int summaryTokens, TimeSpan summaryTime)> GenerateAISummaryAsync(
         string filePath,
@@ -107,7 +109,9 @@ public class MarkdownNoteBatchProcessor : DocumentNoteBatchProcessor<MarkdownNot
         bool noSummary,
         int? timeoutSeconds,
         string? resourcesRoot,
-        bool noShareLinks)
+        bool noShareLinks,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         var summaryStopwatch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -126,6 +130,7 @@ public class MarkdownNoteBatchProcessor : DocumentNoteBatchProcessor<MarkdownNot
         // When summary is enabled, delegate to base implementation
         return await base.GenerateAISummaryAsync(
             filePath, text, metadata, queueItem, fileIndex, totalFiles,
-            openAiApiKey, noSummary, timeoutSeconds, resourcesRoot, noShareLinks).ConfigureAwait(false);
+            openAiApiKey, noSummary, timeoutSeconds, resourcesRoot, noShareLinks,
+            templateTypeName, promptOverride).ConfigureAwait(false);
     }
 }

@@ -66,7 +66,9 @@ public class PdfNoteBatchProcessorTests
             AppConfig? appConfig = null,
             string noteType = null!,
             string failedFilesListName = null!,
-            bool noShareLinks = false)
+            bool noShareLinks = false,
+            string? templateTypeName = null,
+            string? promptOverride = null)
         {
             int processed = 0, failed = 0;
             if (string.IsNullOrWhiteSpace(input))

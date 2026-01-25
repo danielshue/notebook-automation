@@ -232,6 +232,19 @@ public class MetadataEnsureProcessor(
             // Update metadata with hierarchy information based on template-type
             _metadataDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, templateType);
 
+            // Generate and set friendly title from filename if not present or if force overwrite is enabled
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+            string friendlyTitle = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);
+
+            bool shouldUpdateTitle = forceOverwrite || !metadata.ContainsKey("title") || string.IsNullOrWhiteSpace(metadata["title"]?.ToString());
+            _logger.LogDebug($"Title update check - forceOverwrite: {forceOverwrite}, existing title: '{metadata.GetValueOrDefault("title", string.Empty)}', friendlyTitle: '{friendlyTitle}', shouldUpdate: {shouldUpdateTitle}");
+
+            if (shouldUpdateTitle)
+            {
+                metadata["title"] = friendlyTitle;
+                _logger.LogDebug($"Set title to friendly name: '{friendlyTitle}' for file: {filePath}");
+            }
+
             // Ensure required fields based on template type
             EnsureRequiredFields(metadata);
 

@@ -107,8 +107,10 @@ public class VideoNoteBatchProcessorResourcesRootTests
                 It.IsAny<AppConfig>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<bool>()))
-            .ReturnsAsync((
+                It.IsAny<bool>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
+            .Returns((
                 string input,
                 string output,
                 List<string> extensions,
@@ -122,14 +124,16 @@ public class VideoNoteBatchProcessorResourcesRootTests
                 AppConfig appConfig,
                 string noteType,
                 string failedFilesListName,
-                bool noShareLinks) =>
+                bool noShareLinks,
+                string templateTypeName,
+                string promptOverride) =>
             {
                 // Write a file with resourcesRoot in its content for testing
                 string fileName = Path.GetFileNameWithoutExtension(input);
                 string outputPath = Path.Combine(output, $"{fileName}.md");
                 File.WriteAllText(outputPath, $"Test note with onedriveFullpathRoot: {resourcesRoot ?? "default"}");
 
-                return new BatchProcessResult { Processed = 1, Failed = 0 };
+                return Task.FromResult(new BatchProcessResult { Processed = 1, Failed = 0 });
             });
 
         _batchProcessor = mockBatchProcessor.Object;
