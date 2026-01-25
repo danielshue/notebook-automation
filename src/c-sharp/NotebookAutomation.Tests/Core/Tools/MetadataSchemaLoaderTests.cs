@@ -310,5 +310,138 @@ namespace NotebookAutomation.Tests.Core.Tools
             Assert.AreEqual("plugin-resolved-value", resolvedValue,
                 "Plugin resolver should resolve values correctly");
         }
+
+        /// <summary>
+        /// Verifies that Prompt property is inherited from base types.
+        /// </summary>
+        [TestMethod]
+        public void Loader_Should_Inherit_Prompt_From_BaseTypes()
+        {
+            // Arrange
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
+
+            // Act
+            var videoTemplate = loader.TemplateTypes["video-reference"];
+            var pdfTemplate = loader.TemplateTypes["pdf-reference"];
+
+            // Assert
+            Assert.AreEqual("video-reference", videoTemplate.Prompt,
+                "video-reference should have its own Prompt property");
+            Assert.AreEqual("pdf-reference", pdfTemplate.Prompt,
+                "pdf-reference should have its own Prompt property");
+        }
+
+        /// <summary>
+        /// Verifies that generic template types inherit Prompt from base-generic.
+        /// </summary>
+        [TestMethod]
+        public void Loader_Should_Inherit_Prompt_From_BaseGeneric()
+        {
+            // Arrange
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
+
+            // Act
+            var genericVideoTemplate = loader.TemplateTypes["generic-video"];
+            var genericPdfTemplate = loader.TemplateTypes["generic-pdf"];
+
+            // Assert - Should inherit from base-generic
+            Assert.AreEqual("generic_prompt", genericVideoTemplate.Prompt,
+                "generic-video should inherit Prompt from base-generic");
+            Assert.AreEqual("generic_prompt", genericPdfTemplate.Prompt,
+                "generic-pdf should inherit Prompt from base-generic");
+        }
+
+        /// <summary>
+        /// Verifies that PathResolution is inherited from base types.
+        /// </summary>
+        [TestMethod]
+        public void Loader_Should_Inherit_PathResolution_From_BaseTypes()
+        {
+            // Arrange
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
+
+            // Act
+            var baseTemplate = loader.TemplateTypes["base-template"];
+            var videoTemplate = loader.TemplateTypes["video-reference"];
+
+            // Assert
+            Assert.IsNotNull(baseTemplate.PathResolution,
+                "base-template should have PathResolution configured");
+            Assert.IsNotNull(videoTemplate.PathResolution,
+                "video-reference should inherit PathResolution from base-template");
+            Assert.AreEqual("onedrive", videoTemplate.PathResolution.InputRoot,
+                "video-reference should inherit InputRoot from base-template");
+            Assert.AreEqual("vault", videoTemplate.PathResolution.OutputRoot,
+                "video-reference should inherit OutputRoot from base-template");
+        }
+
+        /// <summary>
+        /// Verifies that PathResolution is inherited correctly for generic types.
+        /// </summary>
+        [TestMethod]
+        public void Loader_Should_Inherit_PathResolution_From_BaseGeneric()
+        {
+            // Arrange
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
+
+            // Act
+            var baseGeneric = loader.TemplateTypes["base-generic"];
+            var genericVideo = loader.TemplateTypes["generic-video"];
+
+            // Assert
+            Assert.IsNotNull(baseGeneric.PathResolution,
+                "base-generic should have PathResolution configured");
+            Assert.IsNotNull(genericVideo.PathResolution,
+                "generic-video should inherit PathResolution from base-generic");
+            Assert.AreEqual("cwd", genericVideo.PathResolution.InputRoot,
+                "generic-video should inherit InputRoot=cwd from base-generic");
+            Assert.AreEqual("input", genericVideo.PathResolution.OutputRoot,
+                "generic-video should inherit OutputRoot=input from base-generic");
+        }
+
+        /// <summary>
+        /// Verifies that explicit Prompt overrides inherited value.
+        /// </summary>
+        [TestMethod]
+        public void Loader_Should_Override_Inherited_Prompt()
+        {
+            // Arrange
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
+
+            // Act
+            var videoTemplate = loader.TemplateTypes["video-reference"];
+
+            // Assert - video-reference has explicit Prompt that overrides base-template
+            Assert.AreEqual("video-reference", videoTemplate.Prompt,
+                "video-reference should use its explicit Prompt, not inherited");
+        }
+
+        /// <summary>
+        /// Verifies that base-template and base-generic have correct default configurations.
+        /// </summary>
+        [TestMethod]
+        public void Loader_Should_Configure_BaseTypes_Correctly()
+        {
+            // Arrange
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
+
+            // Act
+            var baseTemplate = loader.TemplateTypes["base-template"];
+            var baseGeneric = loader.TemplateTypes["base-generic"];
+
+            // Assert base-template
+            Assert.AreEqual("default_prompt", baseTemplate.Prompt,
+                "base-template should have default_prompt");
+            Assert.IsNotNull(baseTemplate.PathResolution);
+            Assert.AreEqual("onedrive", baseTemplate.PathResolution.InputRoot);
+            Assert.AreEqual("vault", baseTemplate.PathResolution.OutputRoot);
+
+            // Assert base-generic
+            Assert.AreEqual("generic_prompt", baseGeneric.Prompt,
+                "base-generic should have generic_prompt");
+            Assert.IsNotNull(baseGeneric.PathResolution);
+            Assert.AreEqual("cwd", baseGeneric.PathResolution.InputRoot);
+            Assert.AreEqual("input", baseGeneric.PathResolution.OutputRoot);
+        }
     }
 }

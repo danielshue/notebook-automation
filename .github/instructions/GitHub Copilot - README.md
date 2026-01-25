@@ -1,4 +1,3 @@
-
 # .github Copilot Instructions Directory
 
 This directory contains all instruction files and configuration for GitHub Copilot and related automation. The approach is to centralize project-specific meta instructions in `copilot-instructions.md` and reference all detailed guidelines in separate instruction files. This ensures Copilot and contributors have clear, maintainable, and discoverable guidance for every aspect of the project.
@@ -52,6 +51,15 @@ These instruction files can be referenced in VS Code `settings.json` to customiz
   }
 ]
 ```
+
+## Agent Skills (Recommended for workflows)
+
+VS Code also supports **Agent Skills** (preview) for on-demand, task-specific workflows that can include scripts and other resources.
+
+- Project skills live in `.github/skills/`
+- This workspace enables Agent Skills via `.vscode/settings.json` (`chat.useAgentSkills`: `true`)
+
+This repository includes project skills under `.github/skills/` (see `.github/skills/README.md`).
 
 ## Note
 

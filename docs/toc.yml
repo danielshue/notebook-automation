@@ -1,5 +1,12 @@
 - name: Home
   href: index.md
+- name: Download
+  href: download.md
+- name: Features
+  href: features/
+  items:
+    - name: Overview
+      href: features/index.md
 - name: Getting Started
   href: getting-started/
   items:
@@ -14,12 +21,12 @@
 - name: User Guide
   href: user-guide/
   items:
+    - name: Overview
+      href: user-guide/index.md
     - name: Academic Workflows
       href: user-guide/academic-workflows.md
     - name: Productivity Workflows
       href: user-guide/productivity-workflows.md
-    - name: Overview
-      href: user-guide/index.md
     - name: Tag Management
       href: user-guide/tag-management.md
     - name: Vault Synchronization
@@ -30,42 +37,58 @@
       href: user-guide/authentication.md
     - name: File Processing
       href: user-guide/file-processing.md
-- name: CLI Reference
-  href: cli-reference.md
-- name: Command Cheat Sheet
-  href: cli-cheat-sheet.md
-- name: Architecture
-  href: architecture/
-  items:
-    - name: System Overview
-      href: architecture/system-overview.md
-    - name: Processing Pipeline
-      href: architecture/processing-pipeline.md
-    - name: Architecture Diagrams
-      href: architecture/architecture-diagrams.md
-    - name: Location Agnostic Design
-      href: architecture/location-agnostic-design.md
-    - name: User Secrets
-      href: UserSecrets.md
 - name: Configuration
   href: configuration/
   items:
     - name: Overview
       href: configuration/index.md
+    - name: AI Services
+      href: configuration/ai-services.md
     - name: Metadata Schema
       href: metadata-schema-configuration.md
-- name: Versioning
-  href: versioning.md
 - name: Tutorials
   href: tutorials/
   items:
     - name: Overview
       href: tutorials/index.md
-- name: Developer Guide
-  href: developer-guide/
+    - name: Getting Started Tutorial
+      href: tutorials/getting-started-tutorial.md
+    - name: Academic Notes
+      href: tutorials/academic-notes.md
+    - name: Batch Processing
+      href: tutorials/batch-processing.md
+    - name: PDF Annotation Mastery
+      href: tutorials/pdf-annotation-mastery.md
+    - name: Video Quiz Generator
+      href: tutorials/video-quiz-generator.md
+    - name: Vault Maintenance
+      href: tutorials/vault-maintenance.md
+- name: CLI Reference
+  href: cli-reference.md
+- name: Developer
+  href: developer/
   items:
     - name: Overview
-      href: developer-guide/index.md
+      href: developer/index.md
+    - name: Architecture
+      href: developer/architecture.md
+    - name: Building from Source
+      href: developer/building.md
+    - name: Contributing
+      href: developer/contributing.md
+    - name: Plugin Development
+      href: developer/plugin-development.md
+    - name: Processing Pipeline
+      href: developer/processing-pipeline.md
+    - name: Location-Agnostic Design
+      href: developer/location-agnostic-design.md
+    - name: AI Integration
+      href: developer/ai-integration.md
+- name: API Reference
+  href: api/
+  items:
+    - name: Overview
+      href: api/index.md
 - name: Troubleshooting
   href: troubleshooting/
   items:
@@ -73,8 +96,16 @@
       href: troubleshooting/index.md
     - name: CLI Errors
       href: troubleshooting/cli-errors.md
-- name: API Reference
-  href: api/
+    - name: Configuration Problems
+      href: troubleshooting/configuration-problems.md
+    - name: Common Issues
+      href: troubleshooting/common-issues.md
+- name: Blog
+  href: blog/
   items:
     - name: Overview
-      href: api/index.md
+      href: blog/index.md
+- name: Roadmap
+  href: roadmap.md
+- name: Changelog
+  href: ../CHANGELOG.md

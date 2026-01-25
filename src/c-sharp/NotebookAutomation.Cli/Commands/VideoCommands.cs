@@ -159,6 +159,15 @@ internal class VideoCommands
         var noShareLinksOption = new Option<bool>(
             aliases: ["--no-share-links"],
             description: "Skip OneDrive share link creation (links are created by default)");
+
+        var templateTypeOption = new Option<string?>(
+            aliases: ["--template-type", "-t"],
+            description: "Specify template type to use (e.g., generic-video, video-reference)");
+
+        var promptOption = new Option<string?>(
+            aliases: ["--prompt"],
+            description: "Override prompt file (name or full path)");
+
         var videoCommand = new Command("video-notes", "Video notes and metadata commands");
 
         videoCommand.AddOption(pathOption);
@@ -171,6 +180,8 @@ internal class VideoCommands
         videoCommand.AddOption(timeoutOption);
         videoCommand.AddOption(refreshAuthOption);
         videoCommand.AddOption(noShareLinksOption);
+        videoCommand.AddOption(templateTypeOption);
+        videoCommand.AddOption(promptOption);
         videoCommand.SetHandler(async context =>
         {
             string? input = context.ParseResult.GetValueForOption(pathOption);
@@ -187,6 +198,8 @@ internal class VideoCommands
             int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
             bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
             bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
+            string? templateTypeName = context.ParseResult.GetValueForOption(templateTypeOption);
+            string? promptOverride = context.ParseResult.GetValueForOption(promptOption);
 
             // Print usage/help if required argument is missing
             if (string.IsNullOrEmpty(input))
@@ -599,7 +612,9 @@ internal class VideoCommands
                             timeout,
                             localResourcesPathForBatchProcessor,
                             appConfig,
-                            noShareLinks).ConfigureAwait(false);
+                            noShareLinks,
+                            templateTypeName,
+                            promptOverride).ConfigureAwait(false);
                     },
                     $"Processing video files from {(isFile ? "file" : "directory")}: {resolvedInput}").ConfigureAwait(false);
 

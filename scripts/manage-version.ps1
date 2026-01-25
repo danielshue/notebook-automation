@@ -361,12 +361,12 @@ Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Core\Platform.psm1") -Force
 Import-Module (Join-Path $ModulesDir "GitHub\CLI.psm1") -Force
 Import-Module (Join-Path $ModulesDir "GitHub\Artifacts.psm1") -Force
+Import-Module (Join-Path $ModulesDir "GitHub\ReleaseManagement.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Version\Management.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Safety\Rollback.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\ReleaseNotes.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\Dependencies.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\Checksums.psm1") -Force
-Import-Module (Join-Path $ModulesDir "Release\ReleaseManagement.psm1") -Force
 
 # Initialize rollback tracking after modules are loaded
 # Don't check for uncommitted changes during initialization as this may be run during development
@@ -657,10 +657,10 @@ function Write-VersionStatus {
     Write-Host ""
     Write-Host "🔍 Alignment Check:" -ForegroundColor Blue
     $versions = @()
-    if ($VersionData.ManifestVersion) { $versions += $VersionData.ManifestVersion }
-    if ($VersionData.PackageVersion) { $versions += $VersionData.PackageVersion }
+    if ($VersionData.ManifestVersion) { $versions += [string]$VersionData.ManifestVersion }
+    if ($VersionData.PackageVersion) { $versions += [string]$VersionData.PackageVersion }
 
-    $uniqueVersions = $versions | Sort-Object -Unique
+    $uniqueVersions = @($versions | Select-Object -Unique)
     if ($uniqueVersions.Count -eq 1) {
         Write-Host "  ✅ All components aligned at version: $($uniqueVersions[0])" -ForegroundColor Green
     }
@@ -1110,7 +1110,15 @@ try {
 
         Write-Host "🔍 Validating semantic version in host executables" -ForegroundColor Green
         $hostExecutables = Get-ChildItem -Path $PublishRoot -File | Where-Object { $_.Name -like 'na-*' -and ( ($IsWindows -and $_.Extension -eq '.exe') -or ($IsLinux -and $_.Name -match 'linux') -or ($IsMacOS -and $_.Name -match 'macos') ) }
+        $hostOsArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
         foreach ($exe in $hostExecutables) {
+            $exeNameLower = $exe.Name.ToLowerInvariant()
+            $archMismatch = ($hostOsArch -eq [System.Runtime.InteropServices.Architecture]::X64 -and $exeNameLower -match '(win|linux|macos)-arm64') -or
+            ($hostOsArch -eq [System.Runtime.InteropServices.Architecture]::Arm64 -and $exeNameLower -match '(win|linux|macos)-x64')
+            if ($archMismatch) {
+                Write-Host "    ↷ Skipping $($exe.Name) (not runnable on host architecture: $hostOsArch)" -ForegroundColor DarkYellow
+                continue
+            }
             try {
                 $raw = & $exe.FullName --version 2>$null
                 if ($LASTEXITCODE -ne 0) { throw "Non-zero exit" }
@@ -1240,17 +1248,41 @@ try {
 
         # Semantic version validation (best-effort) – only attempt to execute binaries runnable on the current host
         $hostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' } elseif ($IsMacOS) { 'macos' } else { 'unknown' }
+        $hostArch = 'unknown'
+        try {
+            $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+        }
+        catch {
+            $hostArch = 'unknown'
+        }
+
+        function Get-NaExecutableArchitecture {
+            param([string]$Name)
+
+            if ($Name -match 'arm64') { return 'arm64' }
+            if ($Name -match 'x64') { return 'x64' }
+            return 'unknown'
+        }
 
         foreach ($exe in $executables) {
+            $exeArch = Get-NaExecutableArchitecture -Name $exe.Name
             $canRun = switch ($hostPlatform) {
-                'windows' { $exe.Extension -eq '.exe' }
+                'windows' { ($exe.Extension -eq '.exe') -and ($exe.Name -like 'na-win-*') }
                 'linux' { $exe.Name -like 'na-linux-*' }
                 'macos' { $exe.Name -like 'na-macos-*' }
                 default { $false }
             }
 
+            if ($canRun -and ($hostArch -ne 'unknown') -and ($exeArch -ne 'unknown')) {
+                # Only run executables that match the host OS architecture.
+                # (e.g., win-arm64 binaries cannot be executed on Windows x64)
+                if ($exeArch -ne $hostArch) {
+                    $canRun = $false
+                }
+            }
+
             if (-not $canRun) {
-                Write-Host "   ↺ Skipping version validation for non-host binary $($exe.Name)" -ForegroundColor DarkYellow
+                Write-Host "   ↺ Skipping version validation for non-runnable binary $($exe.Name) (host=$hostPlatform/$hostArch)" -ForegroundColor DarkYellow
                 continue
             }
 

@@ -160,7 +160,9 @@ public class VideoNoteBatchProcessorTests
                 It.IsAny<AppConfig>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<bool>()))
+                It.IsAny<bool>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()))
             .ReturnsAsync(new BatchProcessResult { Processed = 1, Failed = 0 })
             .Callback((
                 string input,
@@ -176,7 +178,9 @@ public class VideoNoteBatchProcessorTests
                 AppConfig _,
                 string _,
                 string _,
-                bool _) =>
+                bool _,
+                string _,
+                string _) =>
             {
                 // Write a test file without AI summary content
                 string outputPath = Path.Combine(output, "test_nosummary.md");

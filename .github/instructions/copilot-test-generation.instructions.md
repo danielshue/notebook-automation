@@ -1,51 +1,49 @@
 ---
-description: Guidelines for generating tests with MSTest and Moq for the Notebook Automation project.
-applyTo: "**"
+description: Guidance for generating MSTest + Moq unit tests in this repository.
+applyTo: "src/c-sharp/NotebookAutomation.Tests/**/*.cs"
 ---
 
-# GitHub Copilot Test Generation Instructions
+# GitHub Copilot Test Generation Instructions (MSTest + Moq)
 
-## Test Structure
+## Test Frameworks
 
-- Follow the Arrange-Act-Assert pattern
-- Each test should verify a single behavior or edge case
-- Test name should clearly describe what is being tested
-- Include setup and teardown as needed
-- Use MSFT Test and Moq for testing frameworks
+- Use **MSTest** attributes (`[TestClass]`, `[TestMethod]`, `[TestInitialize]`, `[TestCleanup]`).
+- Use **Moq** for mocking (`Mock<T>`, `It.IsAny<T>()`, `Setup`, `Verify`).
 
-## Test Coverage
+## Structure
 
-- Test happy paths and edge cases
-- Include input validation tests
-- Test error conditions and exception handling
-- Test boundary conditions
+- Follow **Arrange – Act – Assert**.
+- Prefer **one behavior per test**.
+- Use descriptive names consistent with the existing suite, e.g.:
+  - `Method_WithCondition_ExpectedOutcome`
+  - `Method_WhenCondition_DoesSomething`
+
+## Coverage Expectations
+
+- Cover:
+  - Happy path
+  - Null/empty/invalid inputs (when applicable)
+  - Exception paths (use `Assert.ThrowsException<T>()`)
+  - Boundary conditions
 
 ## Best Practices
 
-- Make tests independent of each other
-- Avoid test interdependencies
-- Use appropriate mocks and test doubles
-- Keep tests fast and deterministic
-- Test external dependencies via interfaces
+- Keep tests deterministic (no timers, network, real filesystem outside temp folders).
+- Prefer temp files/folders via `Path.GetTempFileName()` / `Path.GetTempPath()` and always clean up.
+- Mock external dependencies via interfaces; avoid mocking “value objects”.
+- Avoid over-mocking: assert observable behavior and important interactions.
 
-## Example Test Structure (MSTest)
+## Reuse
 
-```csharp
-[TestClass]
-public class MyTestClass
-{
-    [TestMethod]
-    public void Test_Method_Should_Behavior_When_Condition()
-    {
-        // Arrange
-        var input = SetupInput();
-        var expected = DefineExpectedResult();
+- Reuse existing helpers/fixtures/utilities in the test project when they exist.
+- Follow the guidance in `.github/instructions/copilot-test-reuse.instructions.md`.
 
-        // Act
-        var actual = MethodUnderTest(input);
+## Assertions
 
-        // Assert
-        Assert.AreEqual(expected, actual);
-    }
-}
-```
+- Prefer precise assertions (exact strings, counts, specific keys) rather than broad `Contains` when reasonable.
+- If asserting on collections/dictionaries, verify both presence and value.
+
+## Test Documentation
+
+- Keep XML doc comments consistent with existing tests (summary per class and key tests).
+- Do not add excessive commentary; the name + AAA blocks should carry most intent.

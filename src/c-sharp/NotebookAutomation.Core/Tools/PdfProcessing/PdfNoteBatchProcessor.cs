@@ -139,6 +139,8 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
     /// <param name="forceOverwrite">If true, overwrites existing notes.</param>    /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
     /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>        /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
     /// <param name="appConfig">The application configuration object.</param>
+    /// <param name="templateTypeName">Optional template type name to use for processing.</param>
+    /// <param name="promptOverride">Optional prompt file override (name or full path).</param>
     /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>
     public async Task<BatchProcessResult> ProcessPdfsAsync(
         string input,
@@ -151,7 +153,9 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
         bool retryFailed = false,
         int? timeoutSeconds = null,
         string? resourcesRoot = null,
-        Configuration.AppConfig? appConfig = null)
+        Configuration.AppConfig? appConfig = null,
+        string? templateTypeName = null,
+        string? promptOverride = null)
     {
         var extensions = pdfExtensions ?? [".pdf"];
         return await batchProcessor.ProcessDocumentsAsync(
@@ -167,6 +171,9 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
             resourcesRoot,
             appConfig,
             "PDF Note",
-            "failed_pdfs.txt").ConfigureAwait(false);
+            "failed_pdfs.txt",
+            noShareLinks: false,
+            templateTypeName,
+            promptOverride).ConfigureAwait(false);
     }
 }
