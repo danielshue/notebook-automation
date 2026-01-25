@@ -37,6 +37,9 @@ internal class ApplicationBootstrapper
         // Add notebook automation services using ServiceRegistration
         services.AddNotebookAutomationServices(configuration, debug, configPath);
 
+        // Add Copilot services
+        services.AddCopilotServices(configuration);
+
         // Register application services
         RegisterApplicationServices(services);
 

@@ -633,6 +633,22 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                     // This prevents incomplete inheritance when there are multiple levels of inheritance
                     ResolveTemplateType(baseType, baseSchema, schema);
 
+                    // Inherit Prompt if not set in derived type
+                    if (string.IsNullOrEmpty(typeSchema.Prompt) && !string.IsNullOrEmpty(baseSchema.Prompt))
+                    {
+                        typeSchema.Prompt = baseSchema.Prompt;
+                    }
+
+                    // Inherit PathResolution if not set in derived type
+                    if (typeSchema.PathResolution == null && baseSchema.PathResolution != null)
+                    {
+                        typeSchema.PathResolution = new PathResolutionConfig
+                        {
+                            InputRoot = baseSchema.PathResolution.InputRoot,
+                            OutputRoot = baseSchema.PathResolution.OutputRoot
+                        };
+                    }
+
                     // Copy all fields from the base type to the derived type
                     foreach (var fieldKvp in baseSchema.Fields)
                     {
@@ -800,6 +816,24 @@ public class TemplateTypeSchema
     /// Each entry defines the schema for a field, including default values and resolver names.
     /// </remarks>
     public Dictionary<string, FieldSchema> Fields { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the name or path of the prompt file to use for AI summarization.
+    /// </summary>
+    /// <remarks>
+    /// Can be either a prompt name (e.g., "video-reference") which will be loaded from the prompts directory,
+    /// or a full path to a prompt file. If not specified, inherits from base types or uses system defaults.
+    /// </remarks>
+    public string? Prompt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the path resolution configuration for input and output locations.
+    /// </summary>
+    /// <remarks>
+    /// Defines where to find input files and where to write output files.
+    /// If not specified, inherits from base types or uses system defaults.
+    /// </remarks>
+    public PathResolutionConfig? PathResolution { get; set; }
 }
 
 /// <summary>
@@ -841,4 +875,45 @@ public class FieldSchema
     /// If set, the named resolver will be used to compute the field's value at runtime.
     /// </remarks>
     public string? Resolver { get; set; }
+}
+
+/// <summary>
+/// Represents path resolution configuration for input and output file locations.
+/// </summary>
+/// <remarks>
+/// This class defines where to find input files and where to write output files for different template types.
+/// Supports inheritance from base types and enables flexible path resolution for different processing scenarios.
+/// </remarks>
+/// <example>
+/// <code>
+/// var pathConfig = new PathResolutionConfig {
+///     InputRoot = "onedrive",
+///     OutputRoot = "vault"
+/// };
+/// </code>
+/// </example>
+public class PathResolutionConfig
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PathResolutionConfig"/> class.
+    /// </summary>
+    public PathResolutionConfig() { }
+
+    /// <summary>
+    /// Gets or sets the root location for input files.
+    /// </summary>
+    /// <remarks>
+    /// Valid values: "onedrive", "vault", "cwd" (current working directory).
+    /// Default is "onedrive" if not specified.
+    /// </remarks>
+    public string InputRoot { get; set; } = "onedrive";
+
+    /// <summary>
+    /// Gets or sets the root location for output files.
+    /// </summary>
+    /// <remarks>
+    /// Valid values: "vault", "onedrive", "cwd" (current working directory), "input" (same directory as input file).
+    /// Default is "vault" if not specified.
+    /// </remarks>
+    public string OutputRoot { get; set; } = "vault";
 }

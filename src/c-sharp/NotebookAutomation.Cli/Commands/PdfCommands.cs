@@ -118,7 +118,17 @@ internal class PdfCommands
 
         var extractImagesOption = new Option<bool>(
             aliases: ["--extract-images"],
-            description: "Extract images from PDFs and include them in generated text and markdown files"); var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
+            description: "Extract images from PDFs and include them in generated text and markdown files");
+
+        var templateTypeOption = new Option<string?>(
+            aliases: ["--template-type", "-t"],
+            description: "Specify template type to use (e.g., generic-pdf, pdf-reference)");
+
+        var promptOption = new Option<string?>(
+            aliases: ["--prompt"],
+            description: "Override prompt file (name or full path)");
+
+        var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
         pdfCommand.AddOption(pathOption);
         pdfCommand.AddOption(outputOption);
         pdfCommand.AddOption(vaultRootOverrideOption);
@@ -130,6 +140,8 @@ internal class PdfCommands
         pdfCommand.AddOption(refreshAuthOption);
         pdfCommand.AddOption(noShareLinksOption);
         pdfCommand.AddOption(extractImagesOption);
+        pdfCommand.AddOption(templateTypeOption);
+        pdfCommand.AddOption(promptOption);
         pdfCommand.SetHandler(async context =>
         {
             string? input = context.ParseResult.GetValueForOption(pathOption);
@@ -146,6 +158,8 @@ internal class PdfCommands
             bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
             bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
             bool extractImages = context.ParseResult.GetValueForOption(extractImagesOption);
+            string? templateTypeName = context.ParseResult.GetValueForOption(templateTypeOption);
+            string? promptOverride = context.ParseResult.GetValueForOption(promptOption);
 
             // Print usage/help if required argument is missing
             if (string.IsNullOrEmpty(input))
@@ -509,7 +523,9 @@ internal class PdfCommands
                             retryFailed,
                             timeout,
                             localResourcesPathForBatchProcessor,
-                            appConfig).ConfigureAwait(false);
+                            appConfig,
+                            templateTypeName,
+                            promptOverride).ConfigureAwait(false);
                     },
                     $"Processing PDF files from {(isFile ? "file" : "directory")}: {resolvedInput}").ConfigureAwait(false); logger.LogInformation($"PDF processing completed. Success: {result.Processed}, Failed: {result.Failed}");
                 if (!string.IsNullOrWhiteSpace(result.Summary))

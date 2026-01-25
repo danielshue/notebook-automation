@@ -6,7 +6,6 @@
         <ParallelizeWorkers>false</ParallelizeWorkers>
         <ParallelizeAssembly>false</ParallelizeAssembly>
         <ExecutionThreadApartmentState>STA</ExecutionThreadApartmentState>
-        <SettingsFile></SettingsFile>
     </MSTest>
 
     <!-- Test execution timeout -->
@@ -19,10 +18,18 @@
         <DataCollectors>
             <DataCollector friendlyName="XPlat code coverage">
                 <Configuration>
-                    <Format>cobertura,opencover</Format>
-                    <Include>[NotebookAutomation.Core]*,[NotebookAutomation.Cli]*</Include>
+                    <!-- Use only cobertura format - opencover doesn't support DeterministicReport -->
+                    <Format>cobertura</Format>
+                    <!-- Include both Core and CLI assemblies -->
+                    <Include>[NotebookAutomation.Core]*,[na]*,[NotebookAutomation.Cli]*</Include>
+                    <!-- Exclude generated regex and migration files -->
+                    <Exclude>[*]System.Text.RegularExpressions.Generated*</Exclude>
                     <ExcludeByFile>**/Migrations/**/*.cs</ExcludeByFile>
                     <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+                    <SingleHit>true</SingleHit>
+                    <UseSourceLink>true</UseSourceLink>
+                    <DeterministicReport>true</DeterministicReport>
+                    <SkipAutoProps>true</SkipAutoProps>
                 </Configuration>
             </DataCollector>
         </DataCollectors>

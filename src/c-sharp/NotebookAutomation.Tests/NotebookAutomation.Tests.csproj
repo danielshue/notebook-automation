@@ -30,6 +30,22 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\NotebookAutomation.Core\NotebookAutomation.Core.csproj" />
-        <ProjectReference Include="..\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj" />
+        <ProjectReference Include="..\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj">
+            <!-- Ensure CLI DLL is copied to test output for coverage instrumentation -->
+            <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+            <OutputItemType>Analyzer</OutputItemType>
+        </ProjectReference>
     </ItemGroup>
+
+    <!-- Ensure CLI assembly (na.dll) is copied to test output for coverage -->
+    <Target Name="CopyCliAssemblyForCoverage" AfterTargets="Build">
+        <ItemGroup>
+            <CliAssemblyFiles
+                Include="$(SolutionDir)NotebookAutomation.Cli\bin\$(Configuration)\$(TargetFramework)\na.dll" />
+            <CliAssemblyFiles
+                Include="$(SolutionDir)NotebookAutomation.Cli\bin\$(Configuration)\$(TargetFramework)\na.pdb" />
+        </ItemGroup>
+        <Copy SourceFiles="@(CliAssemblyFiles)" DestinationFolder="$(OutputPath)"
+            SkipUnchangedFiles="true" Condition="Exists('%(CliAssemblyFiles.Identity)')" />
+    </Target>
 </Project>

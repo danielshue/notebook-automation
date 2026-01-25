@@ -194,7 +194,53 @@ internal class Program
         var isConfigView = args.Contains("config") && args.Contains("view") &&
                           Array.IndexOf(args, "view") == Array.IndexOf(args, "config") + 1;
 
-        // Show custom help for: no args, explicit root help, or --config without value
+        // If no args provided, try to enter chat mode
+        if (isNoArgs)
+        {
+            var appConfig = serviceProvider.GetRequiredService<AppConfig>();
+
+            // Check if auto-chat mode is enabled and Copilot is available
+            if (appConfig.Copilot.Enabled && appConfig.Copilot.AutoChatMode)
+            {
+                var copilotService = serviceProvider.GetService<ICopilotService>();
+                if (copilotService != null)
+                {
+                    var availability = await copilotService.CheckAvailabilityAsync().ConfigureAwait(false);
+                    if (availability.IsAvailable)
+                    {
+                        logger.LogInformation("Entering chat mode (no arguments provided)");
+
+                        // Create chat mode UI components
+                        var welcomeBanner = new WelcomeBanner(appConfig);
+                        var builtInCommands = new ChatBuiltInCommands(
+                            serviceProvider.GetRequiredService<ILogger<ChatBuiltInCommands>>(),
+                            copilotService);
+                        var chatUI = new ChatModeUI(
+                            serviceProvider.GetRequiredService<ILogger<ChatModeUI>>(),
+                            copilotService,
+                            welcomeBanner,
+                            builtInCommands,
+                            appConfig.Copilot.HighContrast);
+
+                        var chatOptions = new ChatModeOptions
+                        {
+                            ShowBanner = appConfig.Copilot.ShowWelcomeBanner,
+                            HighContrast = appConfig.Copilot.HighContrast
+                        };
+
+                        return await chatUI.RunAsync(chatOptions).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        logger.LogDebug("Copilot not available, falling back to help display");
+                    }
+                }
+            }
+
+            // Fallback to help display if Copilot is not available or disabled
+        }
+
+        // Show custom help for: no args (if not in chat mode), explicit root help, or --config without value
         if (isNoArgs || isRootHelp || isConfigOnly)
         {
             var helpDisplayService = serviceProvider.GetRequiredService<HelpDisplayService>();

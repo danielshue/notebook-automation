@@ -120,6 +120,35 @@ internal class MockPromptTemplateService : IPromptService
     public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(SubstituteVariables(template, variables));
 
     /// <summary>
+    /// Loads a prompt template based on template type configuration with support for CLI overrides.
+    /// </summary>
+    /// <param name="promptOverride">Optional CLI prompt override.</param>
+    /// <param name="templateType">Optional template type schema.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The configured template text.</returns>
+    public Task<string> LoadPromptForTemplateTypeAsync(
+        string? promptOverride,
+        NotebookAutomation.Core.Tools.TemplateTypeSchema? templateType,
+        CancellationToken cancellationToken = default)
+    {
+        // Simple mock implementation: use override if provided, otherwise use configured template
+        if (!string.IsNullOrEmpty(promptOverride))
+        {
+            LastTemplateName = promptOverride;
+            return Task.FromResult(Template);
+        }
+
+        if (templateType?.Prompt != null)
+        {
+            LastTemplateName = templateType.Prompt;
+            return Task.FromResult(Template);
+        }
+
+        LastTemplateName = "final_summary_prompt";
+        return Task.FromResult(Template);
+    }
+
+    /// <summary>
     /// Verifies that a specific variable was substituted in the template.
     /// </summary>
     /// <param name="variableName">Name of the variable to check.</param>

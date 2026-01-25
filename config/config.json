@@ -14,10 +14,7 @@
     "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",
     "api_endpoint": "https://graph.microsoft.com/v1.0",
     "authority": "https://login.microsoftonline.com/common",
-    "scopes": [
-      "Files.ReadWrite.All",
-      "Sites.Read.All"
-    ]
+    "scopes": ["Files.ReadWrite.All", "Sites.Read.All"]
   },
   "aiservice": {
     "provider": "azure",
@@ -56,14 +53,8 @@
     ".mpeg",
     ".m4v"
   ],
-  "pdf_extensions": [
-    ".pdf"
-  ],
-  "html_extensions": [
-    ".html",
-    ".htm",
-    ".epub"
-  ],
+  "pdf_extensions": [".pdf"],
+  "html_extensions": [".html", ".htm", ".epub"],
   "banners": {
     "enabled": true,
     "default": "gies-banner.png",
@@ -77,5 +68,17 @@
       "*index*": "gies-banner.png",
       "*main*": "gies-banner.png"
     }
+  },
+  "copilot": {
+    "enabled": true,
+    "autoChatMode": false,
+    "showWelcomeBanner": true,
+    "enableStreaming": true,
+    "sessionRetentionDays": 30,
+    "autoSaveSessions": true,
+    "maxSessions": 100,
+    "highContrast": false,
+    "defaultModel": "gpt-4",
+    "logLevel": "Information"
   }
 }

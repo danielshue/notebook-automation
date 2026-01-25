@@ -5,6 +5,10 @@
     "onedrive_fullpath_root": "D:/source/notebook-automation/tests/sync-test",
     "onedrive_resources_basepath": "Value Chain Management - OneDrive/Documents"
   },
+  "copilot": {
+    "enabled": false,
+    "autoChatMode": false
+  },
   "debug": false,
   "verbose": false
 }

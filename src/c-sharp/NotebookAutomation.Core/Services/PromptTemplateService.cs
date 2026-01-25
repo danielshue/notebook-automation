@@ -279,15 +279,92 @@ public partial class PromptTemplateService : IPromptService
     public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? substitutionValues)
     {
         return Task.FromResult(SubstituteVariables(template, substitutionValues));
-    }    /// <summary>
-         /// Generates a regular expression to match template variables enclosed in double curly braces.
-         /// </summary>
-         /// <returns>
-         /// A <see cref="Regex"/> instance that matches placeholders in the format {{variable_name}}.
-         /// </returns>
-         /// <remarks>
-         /// This method uses the <see cref="GeneratedRegexAttribute"/> to define a compile-time constant regex.
-         /// </remarks>
+    }
+
+    /// <summary>
+    /// Loads a prompt template based on template type configuration with support for CLI overrides.
+    /// </summary>
+    /// <param name="promptOverride">Optional CLI prompt override (name or full path). Takes precedence over template type settings.</param>
+    /// <param name="templateType">Optional template type schema containing prompt configuration.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The loaded prompt template content.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method implements the prompt resolution order:
+    /// <list type="number">
+    ///   <item><description>CLI override (if provided)</description></item>
+    ///   <item><description>Template type's Prompt property (inherited from base types)</description></item>
+    ///   <item><description>System default prompt (final_summary_prompt)</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    public async Task<string> LoadPromptForTemplateTypeAsync(
+        string? promptOverride,
+        Tools.TemplateTypeSchema? templateType,
+        CancellationToken cancellationToken = default)
+    {
+        // Resolution order:
+        // 1. CLI override (if provided)
+        if (!string.IsNullOrEmpty(promptOverride))
+        {
+            return await LoadPromptAsync(promptOverride, cancellationToken).ConfigureAwait(false);
+        }
+
+        // 2. Template-type's prompt (already resolved via inheritance)
+        if (templateType?.Prompt != null)
+        {
+            return await LoadPromptAsync(templateType.Prompt, cancellationToken).ConfigureAwait(false);
+        }
+
+        // 3. System default
+        return await LoadTemplateAsync("final_summary_prompt").ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Loads a prompt by name or full path.
+    /// </summary>
+    /// <param name="promptNameOrPath">Either a prompt name (loaded from prompts directory) or a full file path.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The loaded prompt content.</returns>
+    /// <remarks>
+    /// <para>
+    /// If the parameter contains path separators or is a rooted path, it's treated as a full file path
+    /// and loaded directly. Otherwise, it's treated as a prompt name and loaded from the prompts directory.
+    /// </para>
+    /// </remarks>
+    private async Task<string> LoadPromptAsync(string promptNameOrPath, CancellationToken cancellationToken)
+    {
+        // If full path, load directly
+        if (Path.IsPathRooted(promptNameOrPath) || promptNameOrPath.Contains(Path.DirectorySeparatorChar))
+        {
+            if (File.Exists(promptNameOrPath))
+            {
+                var content = await File.ReadAllTextAsync(promptNameOrPath, cancellationToken).ConfigureAwait(false);
+                // Strip frontmatter if present
+                content = yamlHelper.RemoveFrontmatter(content);
+                logger.LogDebug($"Loaded prompt from path: {promptNameOrPath}");
+                return content;
+            }
+            else
+            {
+                logger.LogWarning($"Prompt file not found at path: {promptNameOrPath}. Using default.");
+                return await LoadTemplateAsync("final_summary_prompt").ConfigureAwait(false);
+            }
+        }
+
+        // Otherwise, load from prompts directory
+        return await LoadTemplateAsync(promptNameOrPath).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Generates a regular expression to match template variables enclosed in double curly braces.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Regex"/> instance that matches placeholders in the format {{variable_name}}.
+    /// </returns>
+    /// <remarks>
+    /// This method uses the <see cref="GeneratedRegexAttribute"/> to define a compile-time constant regex.
+    /// </remarks>
     [GeneratedRegex("{{(.*?)}}")]
     internal static partial Regex TemplateVariableRegex();
 }

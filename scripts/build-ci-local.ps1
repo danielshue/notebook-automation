@@ -89,6 +89,25 @@ try {
         Write-Host "Advanced C# Formatting: Enabled (XML docs + StyleCop)" -ForegroundColor $Magenta
     }
 
+    # Initialize coverage summary variables for end-of-build display
+    $script:CoverageSummary = $null
+    $script:LineCoverage = $null
+    $script:BranchCoverage = $null
+    $script:CoveredLines = $null
+    $script:UncoveredLines = $null
+    $script:TotalLines = $null
+    $script:CoveredBranches = $null
+    $script:TotalBranches = $null
+    $script:AssemblyCount = $null
+    $script:ClassCount = $null
+    $script:TotalMethods = $null
+    $script:CoveredMethods = $null
+    $script:MethodCoverage = $null
+    $script:TestsTotal = 0
+    $script:TestsPassed = 0
+    $script:TestsFailed = 0
+    $script:TestsSkipped = 0
+
     # Plugin-only mode - skip .NET solution build
     if ($PluginOnly) {
         Write-Host "🔌 Plugin-Only Mode - Skipping .NET solution build" -ForegroundColor $Magenta
@@ -397,73 +416,183 @@ try {
     if (-not $SkipTests) {
         Write-Step "Step 6: Run Tests with Coverage"
         $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
+        
+        # Kill lingering test host processes that may hold locks on DLLs (prevents Coverlet file access errors)
+        $testHostProcesses = Get-Process -Name "testhost*" -ErrorAction SilentlyContinue
+        if ($testHostProcesses) {
+            Write-Host "Stopping lingering test host processes to prevent file lock issues..." -ForegroundColor $Yellow
+            $testHostProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Milliseconds 500
+        }
+        
+        # Clean TestResults folder to avoid stale coverage file conflicts
+        $testResultsPath = Join-Path $RepositoryRoot "TestResults"
+        if (Test-Path $testResultsPath) {
+            Write-Host "Cleaning TestResults folder..." -ForegroundColor $Yellow
+            Remove-Item -Path $testResultsPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        
         if ($VerboseOutput) {
             dotnet test "$SolutionPath" --configuration $Configuration --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings "$RepositoryRoot\coverlet.runsettings" --verbosity normal
         }
         else {
             dotnet test "$SolutionPath" --configuration $Configuration --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings "$RepositoryRoot\coverlet.runsettings"
         }
+        
+        # Post-test cleanup: Kill any hanging test host processes to release DLL locks for Coverlet
+        Start-Sleep -Milliseconds 200
+        $hangingTestHosts = Get-Process -Name "testhost*" -ErrorAction SilentlyContinue
+        if ($hangingTestHosts) {
+            Write-Host "Cleaning up test host processes..." -ForegroundColor $Yellow
+            $hangingTestHosts | Stop-Process -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Milliseconds 300
+        }
+        
         if ($LASTEXITCODE -ne 0) {
             throw "Tests failed with exit code $LASTEXITCODE"
         }
         Write-Success "All tests passed"
         
-        # Generate coverage report (mirrors bash script functionality)
-        if (Test-Path "$RepositoryRoot\TestResults") {
-            $coverageFiles = Get-ChildItem -Path "$RepositoryRoot\TestResults" -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
-            
-            if ($coverageFiles) {
-                Write-Host "Generating coverage report..." -ForegroundColor $Yellow
-                
-                # Check if reportgenerator tool is available
+        # Parse test results from TRX file for final summary
+        $script:TestsTotal = 0
+        $script:TestsPassed = 0
+        $script:TestsFailed = 0
+        $script:TestsSkipped = 0
+        
+        $trxFiles = Get-ChildItem -Path "$RepositoryRoot\src\c-sharp" -Recurse -Filter "test-results.trx" -ErrorAction SilentlyContinue
+        if ($trxFiles) {
+            foreach ($trxFile in $trxFiles) {
                 try {
-                    $null = Get-Command reportgenerator -ErrorAction Stop
+                    [xml]$trxContent = Get-Content $trxFile.FullName
+                    $counters = $trxContent.TestRun.ResultSummary.Counters
+                    if ($counters) {
+                        $script:TestsTotal += [int]$counters.total
+                        $script:TestsPassed += [int]$counters.passed
+                        $script:TestsFailed += [int]$counters.failed
+                        $script:TestsSkipped += ([int]$counters.total - [int]$counters.executed)
+                    }
                 }
                 catch {
-                    Write-Host "Installing ReportGenerator tool..." -ForegroundColor $Yellow
-                    try {
-                        dotnet tool install -g dotnet-reportgenerator-globaltool
-                        if ($LASTEXITCODE -ne 0) {
-                            Write-Warning "Failed to install ReportGenerator, skipping coverage report"
-                        }
-                    }
-                    catch {
+                    Write-Warning "Could not parse TRX file: $($trxFile.FullName)"
+                }
+            }
+        }
+        
+        # Generate coverage report (mirrors bash script functionality)
+        # Search for coverage files in multiple possible locations
+        $coverageSearchPaths = @(
+            "$RepositoryRoot\TestResults",
+            "$RepositoryRoot\src\c-sharp\NotebookAutomation.Tests\TestResults",
+            "$RepositoryRoot\src\c-sharp\*\TestResults"
+        )
+        
+        $coverageFiles = @()
+        foreach ($searchPath in $coverageSearchPaths) {
+            if (Test-Path $searchPath) {
+                $found = Get-ChildItem -Path $searchPath -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
+                if ($found) {
+                    $coverageFiles += $found
+                }
+            }
+        }
+        
+        if ($coverageFiles) {
+            Write-Host "Found $($coverageFiles.Count) coverage file(s), generating report..." -ForegroundColor $Yellow
+            
+            # Check if reportgenerator tool is available
+            try {
+                $null = Get-Command reportgenerator -ErrorAction Stop
+            }
+            catch {
+                Write-Host "Installing ReportGenerator tool..." -ForegroundColor $Yellow
+                try {
+                    dotnet tool install -g dotnet-reportgenerator-globaltool
+                    if ($LASTEXITCODE -ne 0) {
                         Write-Warning "Failed to install ReportGenerator, skipping coverage report"
                     }
                 }
-                
-                # Generate coverage report
-                try {
-                    $reportArgs = @(
-                        "-reports:$RepositoryRoot\TestResults\**\coverage.cobertura.xml",
-                        "-targetdir:$RepositoryRoot\CoverageReport",
-                        "-reporttypes:HtmlInline;Cobertura;TextSummary",
-                        "-assemblyfilters:+NotebookAutomation.*;-*.Tests",
-                        "-classfilters:+*;-*Test*",
-                        "-title:Notebook Automation Code Coverage Report (Local)"
-                    )
-                    
-                    & reportgenerator $reportArgs
-                    if ($LASTEXITCODE -eq 0) {
-                        # Display text summary if available
-                        $summaryFile = "$RepositoryRoot\CoverageReport\Summary.txt"
-                        if (Test-Path $summaryFile) {
-                            Write-Host "Coverage Summary:" -ForegroundColor $Yellow
-                            Get-Content $summaryFile
-                        }
-                        Write-Success "Coverage report generated at: $RepositoryRoot\CoverageReport\index.html"
-                    }
-                    else {
-                        Write-Warning "Failed to generate coverage report"
-                    }
-                }
                 catch {
-                    Write-Warning "Failed to generate coverage report: $($_.Exception.Message)"
+                    Write-Warning "Failed to install ReportGenerator, skipping coverage report"
                 }
             }
-            else {
-                Write-Warning "No coverage files found, skipping report generation"
+            
+            # Generate coverage report using all found coverage files
+            try {
+                $coverageFilesList = ($coverageFiles | ForEach-Object { $_.FullName }) -join ";"
+                $reportArgs = @(
+                    "-reports:$coverageFilesList",
+                    "-targetdir:$RepositoryRoot\CoverageReport",
+                    "-reporttypes:HtmlInline;Cobertura;TextSummary",
+                    "-assemblyfilters:+NotebookAutomation.*;+na;-*.Tests",
+                    "-classfilters:+*;-*Test*",
+                    "-title:Notebook Automation Code Coverage Report (Local)"
+                )
+                
+                & reportgenerator $reportArgs
+                if ($LASTEXITCODE -eq 0) {
+                    # Parse coverage details from generated Cobertura XML for final summary
+                    $generatedCobertura = "$RepositoryRoot\CoverageReport\Cobertura.xml"
+                    if (Test-Path $generatedCobertura) {
+                        try {
+                            [xml]$coberturaXml = Get-Content $generatedCobertura
+                            $coverage = $coberturaXml.coverage
+                            
+                            # Line coverage
+                            $lineRate = [double]$coverage.'line-rate'
+                            $script:LineCoverage = [math]::Round($lineRate * 100, 2)
+                            $script:CoveredLines = [int]$coverage.'lines-covered'
+                            $script:TotalLines = [int]$coverage.'lines-valid'
+                            $script:UncoveredLines = $script:TotalLines - $script:CoveredLines
+                            
+                            # Branch coverage
+                            $branchRate = [double]$coverage.'branch-rate'
+                            $script:BranchCoverage = [math]::Round($branchRate * 100, 2)
+                            $script:CoveredBranches = [int]$coverage.'branches-covered'
+                            $script:TotalBranches = [int]$coverage.'branches-valid'
+                            
+                            # Assembly/class/method counts from packages
+                            $packages = $coberturaXml.coverage.packages.package
+                            $script:AssemblyCount = if ($packages -is [array]) { $packages.Count } else { 1 }
+                            
+                            # Count classes and methods
+                            $allClasses = $coberturaXml.SelectNodes("//class")
+                            $script:ClassCount = $allClasses.Count
+                            
+                            $allMethods = $coberturaXml.SelectNodes("//method")
+                            $script:TotalMethods = $allMethods.Count
+                            $coveredMethods = ($allMethods | Where-Object { [double]$_.'line-rate' -gt 0 }).Count
+                            $script:CoveredMethods = $coveredMethods
+                            $script:MethodCoverage = if ($script:TotalMethods -gt 0) { [math]::Round(($coveredMethods / $script:TotalMethods) * 100, 1) } else { 0 }
+                        }
+                        catch {
+                            Write-Warning "Could not parse coverage details from Cobertura XML: $($_.Exception.Message)"
+                        }
+                    }
+                    
+                    Write-Success "Coverage report generated at: $RepositoryRoot\CoverageReport\index.html"
+                }
+                else {
+                    Write-Warning "Failed to generate coverage report"
+                }
             }
+            catch {
+                Write-Warning "Failed to generate coverage report: $($_.Exception.Message)"
+            }
+        }
+        else {
+            # Try to parse coverage directly from source cobertura file even if reportgenerator isn't available
+            foreach ($coverageFile in $coverageFiles) {
+                try {
+                    [xml]$coberturaXml = Get-Content $coverageFile.FullName
+                    $lineRate = [double]$coberturaXml.coverage.'line-rate'
+                    $branchRate = [double]$coberturaXml.coverage.'branch-rate'
+                    $script:LineCoverage = [math]::Round($lineRate * 100, 2)
+                    $script:BranchCoverage = [math]::Round($branchRate * 100, 2)
+                    break
+                }
+                catch { }
+            }
+            Write-Warning "No coverage files found in any search path, skipping report generation"
         }
     }
     else {
@@ -474,6 +603,14 @@ try {
     Write-Step "Step 7: Test Cross-Platform Publish Operations"
     $cliProjectPath = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj"
     $tempPublishDir = Join-Path $ScriptDir "temp_publish_test"
+
+    # Remove existing checksums.json before building so it regenerates with fresh hashes
+    $distDir = Join-Path $RepositoryRoot "dist"
+    $existingChecksums = Join-Path $distDir "checksums.json"
+    if (Test-Path $existingChecksums) {
+        Write-Host "Removing existing checksums.json to regenerate with fresh build hashes..." -ForegroundColor $Yellow
+        Remove-Item $existingChecksums -Force
+    }
 
     try {
         # Helper: dotnet publish with guarded retries and targeted cleanup to avoid transient bundling issues (Windows flake)
@@ -733,19 +870,27 @@ try {
             if (Test-Path $checksumsPath) {
                 try {
                     $existing = Get-Content $checksumsPath -Raw | ConvertFrom-Json
-                    $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
-                    foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
-                    foreach ($name in $expected) {
-                        if ($hashMap[$name] -ne $existing.files.$name) { throw "Checksum mismatch for $name" }
+                    if (-not $existing.files) {
+                        Write-Host "⚠️  checksums.json exists but has no files property - regenerating" -ForegroundColor $Yellow
+                        $existing = $null
                     }
-                    Write-Host "✅ Existing checksums.json verified" -ForegroundColor $Green
-                    return $checksumsPath
+                    if ($existing) {
+                        $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+                        foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
+                        foreach ($name in $expected) {
+                            if ($hashMap[$name] -ne $existing.files.$name) { throw "Checksum mismatch for $name" }
+                        }
+                        Write-Host "✅ Existing checksums.json verified" -ForegroundColor $Green
+                        return $checksumsPath
+                    }
                 }
                 catch {
-                    throw "checksums.json validation failed: $($_.Exception.Message)"
+                    Write-Host "⚠️  checksums.json validation failed: $($_.Exception.Message) - regenerating" -ForegroundColor $Yellow
+                    $existing = $null
                 }
             }
-            else {
+            # Generate new checksums.json if validation failed or file doesn't exist
+            if (-not $existing) {
                 $payload = [ordered]@{
                     version      = 'local-dev'
                     algorithm    = 'SHA256'
@@ -993,6 +1138,48 @@ try {
     
     if ($DeployPlugin) {
         Write-Host "✓ Plugin deployed to test vault" -ForegroundColor $Green
+    }
+
+    # Display test results summary
+    if ($script:TestsTotal -gt 0) {
+        Write-Host "`nTest Results:" -ForegroundColor $Magenta
+        Write-Host "=============" -ForegroundColor $Magenta
+        Write-Host "  Total:   $($script:TestsTotal)" -ForegroundColor $Cyan
+        Write-Host "  Passed:  $($script:TestsPassed)" -ForegroundColor $Green
+        Write-Host "  Skipped: $($script:TestsSkipped)" -ForegroundColor $Yellow
+        if ($script:TestsFailed -gt 0) {
+            Write-Host "  Failed:  $($script:TestsFailed)" -ForegroundColor $Red
+        }
+        else {
+            Write-Host "  Failed:  $($script:TestsFailed)" -ForegroundColor $Green
+        }
+    }
+
+    # Display coverage summary at end if available
+    if ($script:LineCoverage) {
+        Write-Host "`nCode Coverage:" -ForegroundColor $Magenta
+        Write-Host "==============" -ForegroundColor $Magenta
+        Write-Host "  Line Coverage:   $($script:LineCoverage)%" -ForegroundColor $Cyan
+        Write-Host "  Branch Coverage: $($script:BranchCoverage)%" -ForegroundColor $Cyan
+        
+        if ($script:AssemblyCount) {
+            Write-Host "" 
+            Write-Host "  Assemblies:        $($script:AssemblyCount)" -ForegroundColor $Cyan
+            Write-Host "  Classes:           $($script:ClassCount)" -ForegroundColor $Cyan
+        }
+        if ($script:CoveredLines) {
+            Write-Host "  Covered lines:     $($script:CoveredLines)" -ForegroundColor $Cyan
+            Write-Host "  Uncovered lines:   $($script:UncoveredLines)" -ForegroundColor $Cyan
+            Write-Host "  Coverable lines:   $($script:TotalLines)" -ForegroundColor $Cyan
+        }
+        if ($script:CoveredBranches) {
+            Write-Host "  Covered branches:  $($script:CoveredBranches) of $($script:TotalBranches)" -ForegroundColor $Cyan
+        }
+        if ($script:TotalMethods) {
+            Write-Host "  Method coverage:   $($script:MethodCoverage)% ($($script:CoveredMethods) of $($script:TotalMethods))" -ForegroundColor $Cyan
+        }
+        
+        Write-Host "`n  Full report: $RepositoryRoot\CoverageReport\index.html" -ForegroundColor $Yellow
     }
 
     # Display timing info

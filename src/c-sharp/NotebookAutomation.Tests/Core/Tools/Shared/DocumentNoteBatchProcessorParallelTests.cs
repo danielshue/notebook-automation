@@ -95,7 +95,7 @@ public class DocumentNoteBatchProcessorParallelTests
                 _batchProcessor,
                 new object?[]
                 {
-                    files, "output", null, false, true, string.Empty, true, null, true, "Test", null
+                    files, "output", null, false, true, string.Empty, true, null, true, "Test", null, null, null
                 })!;
 
             // Assert - Should complete without exception (dry run mode)
@@ -147,7 +147,7 @@ public class DocumentNoteBatchProcessorParallelTests
                 _batchProcessor,
                 new object?[]
                 {
-                    files, "output", null, false, true, string.Empty, true, null, true, "Test", appConfig
+                    files, "output", null, false, true, string.Empty, true, null, true, "Test", appConfig, null, null
                 })!;
 
             // Assert - Should complete without exception (dry run mode)

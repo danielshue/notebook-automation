@@ -91,6 +91,12 @@ public class AppConfig : IConfiguration
     public virtual BannerConfig Banners { get; set; } = new BannerConfig();
 
     /// <summary>
+    /// Gets or sets the GitHub Copilot SDK configuration section.
+    /// </summary>
+    [JsonPropertyName("copilot")]
+    public virtual CopilotConfig Copilot { get; set; } = new CopilotConfig();
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AppConfig"/> class.
     /// Default constructor for manual initialization.
     /// </summary>
@@ -229,6 +235,25 @@ public class AppConfig : IConfiguration
                         .Where(x => !string.IsNullOrEmpty(x))
                         .Select(x => x!)];
                 }
+
+                // Load Copilot configuration
+                var copilotSection = underlyingConfiguration.GetSection("copilot");
+                if (copilotSection.Exists())
+                {
+                    Copilot = new CopilotConfig
+                    {
+                        Enabled = copilotSection.GetValue<bool?>("enabled") ?? true,
+                        DefaultModel = copilotSection["defaultModel"],
+                        AutoChatMode = copilotSection.GetValue<bool?>("autoChatMode") ?? false,
+                        ShowWelcomeBanner = copilotSection.GetValue<bool?>("showWelcomeBanner") ?? true,
+                        EnableStreaming = copilotSection.GetValue<bool?>("enableStreaming") ?? true,
+                        SessionRetentionDays = copilotSection.GetValue<int?>("sessionRetentionDays") ?? 30,
+                        AutoSaveSessions = copilotSection.GetValue<bool?>("autoSaveSessions") ?? true,
+                        MaxSessions = copilotSection.GetValue<int?>("maxSessions") ?? 100,
+                        HighContrast = copilotSection.GetValue<bool?>("highContrast") ?? false,
+                        LogLevel = copilotSection["logLevel"] ?? "Information"
+                    };
+                }
             }
             else
             {
@@ -251,6 +276,7 @@ public class AppConfig : IConfiguration
                         VideoExtensions = loaded.VideoExtensions;
                         PdfExtensions = loaded.PdfExtensions;
                         HtmlExtensions = loaded.HtmlExtensions;
+                        Copilot = loaded.Copilot;
 
                         // Note: Legacy paths.metadata_file support removed; only metadata_schema_file is honored
                     }

@@ -15,6 +15,7 @@ global using System.Text.Json;
 global using System.Threading;
 global using System.Threading.Tasks;
 
+global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 
@@ -22,6 +23,7 @@ global using NotebookAutomation.Cli.Cli;
 global using NotebookAutomation.Cli.Commands;
 global using NotebookAutomation.Cli.Configuration;
 global using NotebookAutomation.Cli.Models;
+global using NotebookAutomation.Cli.Services.Copilot;
 global using NotebookAutomation.Cli.Startup;
 global using NotebookAutomation.Cli.UI;
 global using NotebookAutomation.Cli.Utilities;
