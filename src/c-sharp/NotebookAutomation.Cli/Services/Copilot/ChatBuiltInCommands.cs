@@ -1,6 +1,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using NotebookAutomation.Cli.Services.Browse;
 using NotebookAutomation.Cli.Services.Copilot;
+using NotebookAutomation.Cli.UI.Browse;
+using NotebookAutomation.Core.Tools.Vault;
 
 namespace NotebookAutomation.Cli.Services.Copilot;
 
@@ -11,6 +14,7 @@ public class ChatBuiltInCommands
 {
     private readonly ILogger<ChatBuiltInCommands> logger;
     private readonly ICopilotService copilotService;
+    private readonly IVaultBrowserService? vaultBrowserService;
     private string? currentModel;
 
     /// <summary>
@@ -18,12 +22,15 @@ public class ChatBuiltInCommands
     /// </summary>
     /// <param name="logger">Logger instance.</param>
     /// <param name="copilotService">Copilot service.</param>
+    /// <param name="vaultBrowserService">Vault browser service (optional).</param>
     public ChatBuiltInCommands(
         ILogger<ChatBuiltInCommands> logger,
-        ICopilotService copilotService)
+        ICopilotService copilotService,
+        IVaultBrowserService? vaultBrowserService = null)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.copilotService = copilotService ?? throw new ArgumentNullException(nameof(copilotService));
+        this.vaultBrowserService = vaultBrowserService;
     }
 
     /// <summary>
@@ -57,9 +64,11 @@ public class ChatBuiltInCommands
             "history" => true,
             "model" => true,
             "session" => true,
+            "browse" => true,
             _ when command.StartsWith("help ") => true,
             _ when command.StartsWith("model ") => true,
             _ when command.StartsWith("session ") => true,
+            _ when command.StartsWith("browse ") => true,
             _ when command.StartsWith("!") => true,
             _ => false
         };
@@ -128,6 +137,13 @@ public class ChatBuiltInCommands
             return false;
         }
 
+        // Browse command
+        if (command == "browse" || command.StartsWith("browse "))
+        {
+            await HandleBrowseCommandAsync(command, cancellationToken);
+            return false;
+        }
+
         return false;
     }
 
@@ -156,6 +172,8 @@ public class ChatBuiltInCommands
             table.AddRow("[cyan]model <name>[/]", "Switch to a different model");
             table.AddRow("[cyan]session[/]", "Show current session info");
             table.AddRow("[cyan]session list[/]", "List saved sessions");
+            table.AddRow("[cyan]browse[/]", "Browse vault files interactively");
+            table.AddRow("[cyan]browse vault[/]", "Browse vault files");
             table.AddRow("[cyan]!<command>[/]", "Execute CLI command directly");
 
             AnsiConsole.Write(table);
@@ -569,6 +587,77 @@ public class ChatBuiltInCommands
         {
             logger.LogWarning(ex, "Failed to execute command: {Command}", command);
             AnsiConsole.MarkupLine($"[red]Failed to execute command:[/] {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handle browse command.
+    /// </summary>
+    private async Task HandleBrowseCommandAsync(string command, CancellationToken cancellationToken)
+    {
+        var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        // Check if vault browser service is available
+        if (vaultBrowserService == null)
+        {
+            AnsiConsole.MarkupLine("[red]Vault browser service is not available.[/]");
+            AnsiConsole.MarkupLine("[dim]Make sure the vault is configured properly.[/]");
+            return;
+        }
+
+        string? initialPath = null;
+        
+        // Parse arguments (browse, browse vault, browse vault <path>)
+        if (parts.Length > 1)
+        {
+            if (parts[1].Equals("vault", StringComparison.OrdinalIgnoreCase))
+            {
+                // browse vault or browse vault <path>
+                initialPath = parts.Length > 2 ? string.Join(' ', parts.Skip(2)) : null;
+            }
+            else if (!parts[1].Equals("onedrive", StringComparison.OrdinalIgnoreCase))
+            {
+                // browse <path>
+                initialPath = string.Join(' ', parts.Skip(1));
+            }
+            else
+            {
+                // browse onedrive (not yet implemented)
+                AnsiConsole.MarkupLine("[yellow]OneDrive browsing is not yet implemented.[/]");
+                AnsiConsole.MarkupLine("[dim]Use[/] [cyan]browse[/] [dim]or[/] [cyan]browse vault[/] [dim]to browse your vault.[/]");
+                return;
+            }
+        }
+
+        try
+        {
+            // Create vault browser source
+            var vaultSource = new VaultBrowserSource(vaultBrowserService);
+
+            // Create file browser UI
+            var browserLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger<FileBrowserUI>.Instance;
+            var browserUI = new FileBrowserUI(vaultSource, browserLogger);
+
+            // Run the browser
+            AnsiConsole.WriteLine();
+            var result = await browserUI.RunAsync(initialPath, cancellationToken);
+
+            // Handle result
+            if (result.LastAction == Models.Browse.BrowseAction.Selected && result.SelectedPath != null)
+            {
+                AnsiConsole.MarkupLine($"[green]✓[/] Selected: [cyan]{result.SelectedPath.EscapeMarkup()}[/]");
+            }
+            else if (result.LastAction == Models.Browse.BrowseAction.Cancelled)
+            {
+                AnsiConsole.MarkupLine("[dim]Browse cancelled[/]");
+            }
+
+            AnsiConsole.WriteLine();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in browse command");
+            AnsiConsole.MarkupLine($"[red]Error:[/] {ex.Message.EscapeMarkup()}");
         }
     }
 }
