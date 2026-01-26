@@ -185,7 +185,7 @@ public class ChatBuiltInCommands
             table.AddRow("[cyan]session[/]", "Show current session info");
             table.AddRow("[cyan]session list[/]", "List saved sessions");
             table.AddRow("[cyan]browse[/]", "Browse vault files interactively");
-            table.AddRow("[cyan]browse <path>[/]", "Browse starting at a specific path");
+            table.AddRow("[cyan]browse vault[/]", "Browse vault files");
             table.AddRow("[cyan]!<command>[/]", "Execute CLI command directly");
 
             AnsiConsole.Write(table);
