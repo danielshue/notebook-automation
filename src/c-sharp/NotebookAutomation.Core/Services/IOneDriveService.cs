@@ -131,6 +131,20 @@ public interface IOneDriveService
     Task<List<string>> ListFilesAsync(string oneDriveFolder, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Lists files and folders in a OneDrive folder with detailed metadata.
+    /// </summary>
+    /// <param name="oneDriveFolder">The OneDrive folder path.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>List of item metadata dictionaries containing name, size, lastModifiedDateTime, folder (if directory), etc.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method retrieves detailed metadata for all items in the specified OneDrive folder.
+    /// Each dictionary contains properties like "name", "id", "size", "lastModifiedDateTime", and "folder" (for directories).
+    /// </para>
+    /// </remarks>
+    Task<List<Dictionary<string, object>>> ListFilesDetailedAsync(string oneDriveFolder, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Uploads a local file to OneDrive at the specified path.
     /// </summary>
     /// <param name="localPath">The local file path.</param>

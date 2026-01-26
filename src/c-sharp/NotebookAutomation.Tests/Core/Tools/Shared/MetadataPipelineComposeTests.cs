@@ -178,6 +178,7 @@ Body text.
         public Task RefreshAuthenticationAsync() => Task.CompletedTask;
         public Task DownloadFileAsync(string oneDrivePath, string localPath, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<List<string>> ListFilesAsync(string oneDriveFolder, CancellationToken cancellationToken = default) => Task.FromResult(new List<string>());
+        public Task<List<Dictionary<string, object>>> ListFilesDetailedAsync(string oneDriveFolder, CancellationToken cancellationToken = default) => Task.FromResult(new List<Dictionary<string, object>>());
         public Task UploadFileAsync(string localPath, string oneDrivePath, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<string?> CreateShareLinkAsync(string filePath, string linkType = "view", string scope = "anonymous", CancellationToken cancellationToken = default) => Task.FromResult<string?>(_link);
         public Task<List<Dictionary<string, object>>> SearchFilesAsync(string query, CancellationToken cancellationToken = default) => Task.FromResult(new List<Dictionary<string, object>>());

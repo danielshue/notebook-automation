@@ -78,7 +78,13 @@ public static class CopilotServiceRegistration
             sp.GetRequiredService<AppConfig>()));
 
         // Register built-in commands handler
-        services.AddSingleton<ChatBuiltInCommands>();
+        services.AddSingleton<ChatBuiltInCommands>(sp => new ChatBuiltInCommands(
+            sp.GetRequiredService<ILogger<ChatBuiltInCommands>>(),
+            sp.GetRequiredService<ICopilotService>(),
+            sp.GetService<IVaultBrowserService>(),
+            sp.GetService<IOneDriveService>(),
+            sp.GetService<AppConfig>(),
+            sp.GetRequiredService<ILoggerFactory>()));
 
         // Register tag management service
         services.AddSingleton<ITagService>(sp =>

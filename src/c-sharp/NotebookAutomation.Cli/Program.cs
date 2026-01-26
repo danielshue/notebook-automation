@@ -214,7 +214,11 @@ internal class Program
                         var welcomeBanner = new WelcomeBanner(appConfig);
                         var builtInCommands = new ChatBuiltInCommands(
                             serviceProvider.GetRequiredService<ILogger<ChatBuiltInCommands>>(),
-                            copilotService);
+                            copilotService,
+                            serviceProvider.GetService<IVaultBrowserService>(),
+                            serviceProvider.GetService<IOneDriveService>(),
+                            appConfig,
+                            serviceProvider.GetRequiredService<ILoggerFactory>());
                         var chatUI = new ChatModeUI(
                             serviceProvider.GetRequiredService<ILogger<ChatModeUI>>(),
                             copilotService,

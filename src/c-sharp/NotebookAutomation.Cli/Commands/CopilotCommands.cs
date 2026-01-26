@@ -168,7 +168,11 @@ public class CopilotCommands
             var welcomeBanner = new WelcomeBanner(config);
             var builtInCommands = new ChatBuiltInCommands(
                 serviceProvider.GetRequiredService<ILogger<ChatBuiltInCommands>>(),
-                copilotService);
+                copilotService,
+                serviceProvider.GetService<IVaultBrowserService>(),
+                serviceProvider.GetService<IOneDriveService>(),
+                config,
+                serviceProvider.GetRequiredService<ILoggerFactory>());
 
             var chatUI = new ChatModeUI(
                 serviceProvider.GetRequiredService<ILogger<ChatModeUI>>(),

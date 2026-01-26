@@ -381,6 +381,102 @@ public class OneDriveService : IOneDriveService
     }
 
     /// <summary>
+    /// Lists files and folders in a OneDrive folder with detailed metadata.
+    /// </summary>
+    /// <param name="oneDriveFolder">The OneDrive folder path.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>List of item metadata dictionaries.</returns>
+    public async Task<List<Dictionary<string, object>>> ListFilesDetailedAsync(string oneDriveFolder, CancellationToken cancellationToken = default)
+    {
+        if (graphClient == null)
+        {
+            throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
+        }
+
+        try
+        {
+            var requestInfo = new RequestInformation
+            {
+                HttpMethod = Method.GET,
+                UrlTemplate = string.IsNullOrEmpty(oneDriveFolder) || oneDriveFolder == "/"
+                    ? "https://graph.microsoft.com/v1.0/me/drive/root/children"
+                    : "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/children",
+                PathParameters = string.IsNullOrEmpty(oneDriveFolder) || oneDriveFolder == "/"
+                    ? new Dictionary<string, object>()
+                    : new Dictionary<string, object> { { "itemPath", oneDriveFolder.TrimStart('/') } },
+            };
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (response == null)
+            {
+                return [];
+            }
+
+            using var doc = JsonDocument.Parse(response);
+            var result = new List<Dictionary<string, object>>();
+
+            if (doc.RootElement.TryGetProperty("value", out var items))
+            {
+                foreach (var item in items.EnumerateArray())
+                {
+                    var dict = new Dictionary<string, object>();
+
+                    if (item.TryGetProperty("name", out var nameProp))
+                    {
+                        dict["name"] = nameProp.GetString() ?? string.Empty;
+                    }
+
+                    if (item.TryGetProperty("id", out var idProp))
+                    {
+                        dict["id"] = idProp.GetString() ?? string.Empty;
+                    }
+
+                    if (item.TryGetProperty("size", out var sizeProp))
+                    {
+                        dict["size"] = sizeProp.GetInt64();
+                    }
+
+                    if (item.TryGetProperty("lastModifiedDateTime", out var modifiedProp))
+                    {
+                        dict["lastModifiedDateTime"] = modifiedProp.GetString() ?? string.Empty;
+                    }
+
+                    if (item.TryGetProperty("folder", out var folderProp))
+                    {
+                        dict["isFolder"] = true;
+                        if (folderProp.TryGetProperty("childCount", out var childCount))
+                        {
+                            dict["childCount"] = childCount.GetInt32();
+                        }
+                    }
+                    else
+                    {
+                        dict["isFolder"] = false;
+                    }
+
+                    if (item.TryGetProperty("@microsoft.graph.downloadUrl", out var downloadUrl))
+                    {
+                        dict["downloadUrl"] = downloadUrl.GetString() ?? string.Empty;
+                    }
+
+                    result.Add(dict);
+                }
+            }
+
+            return result;
+        }
+        catch (ServiceException ex)
+        {
+            logger.LogError(ex, "Graph API error listing detailed files in OneDrive folder: {Folder}", oneDriveFolder);
+            return [];
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to list detailed files in OneDrive folder: {Folder}", oneDriveFolder);
+            return [];
+        }
+    }
+
+    /// <summary>
     /// Uploads a local file to OneDrive at the specified path.
     /// </summary>
     /// <param name="localPath">The local file path.</param>

@@ -33,129 +33,18 @@ Inspired by these projects but needing broader functionality beyond just downloa
 - **🔗 OneDrive Shared Links Management** - Generate and manage shareable links for collaborative access to course materials and resources
 - **🔧 Extensible Architecture** - Plugin system for custom processors
 
-## 🤖 AI Chat Mode
+## 🤖 AI Chat Mode Powered by GitHub Copilot
 
-Notebook Automation now includes an interactive AI-powered chat mode that brings intelligent assistance directly to your command line. The AI assistant has access to 21 specialized tools for vault management, content processing, and workflow automation.
+Notebook Automation now includes an interactive AI-powered chat mode that brings intelligent assistance directly to your command line. The AI assistant has access to specialized tools for vault management, content processing, and workflow automation.
 
 ### ✨ Features
 
 - **💬 Interactive Chat** - Natural language conversation with streaming responses
-- **🛠️ Tool Integration** - AI can execute 21 CLI tools to help manage your vault
+- **🛠️ Tool Integration** - AI can execute CLI tools to help manage your vault
 - **📝 Session Management** - Save and resume conversations with full history
 - **⚡ Streaming Responses** - Real-time AI responses as they're generated
 - **🔄 Context Awareness** - AI understands your vault structure and configuration
 - **🎯 One-Shot Queries** - Quick questions without entering chat mode
-
-### 🚀 Quick Start
-
-#### Setup
-
-1. **Set your API key** (choose one provider):
-
-```bash
-# Azure OpenAI
-export AZURE_OPENAI_KEY="your-azure-openai-key"
-
-# OpenAI
-export OPENAI_API_KEY="your-openai-key"
-```
-
-2. **Configure provider** in `config/config.json`:
-
-```json
-{
-  "aiservice": {
-    "provider": "azure", // or "openai"
-    "azure": {
-      "endpoint": "https://your-resource.cognitiveservices.azure.com/",
-      "deployment": "gpt-4",
-      "model": "gpt-4"
-    }
-  },
-  "copilot": {
-    "enabled": true,
-    "autoChatMode": true,
-    "enableStreaming": true
-  }
-}
-```
-
-#### Usage
-
-**Auto-Enter Chat Mode** (if `autoChatMode: true`):
-
-```bash
-na
-```
-
-**Explicit Chat Mode**:
-
-```bash
-na copilot
-na copilot --model gpt-4o
-na copilot --resume                  # Resume last session
-na copilot --session <session-id>    # Resume specific session
-```
-
-**Copilot Setup & Status**:
-
-```bash
-na copilot status        # Check GitHub Copilot availability
-na copilot install-guide # Show installation instructions
-na copilot install       # Attempt automatic installation (Windows only)
-```
-
-**One-Shot Questions**:
-
-```bash
-na ask "How do I generate index files for my vault?"
-na ask "What video files do I have?" --json
-```
-
-**Built-in Chat Commands**:
-
-- `help` - Show available commands
-- `exit` or `quit` - Exit chat mode
-- `clear` - Clear screen
-- `history` - Show conversation history
-- `session` - Manage chat sessions
-
-### 🛠️ Available AI Tools (21 Total)
-
-The AI assistant has access to 21 specialized tools across multiple categories:
-
-#### Vault Management
-
-- `vault_generate_index` - Create index files for vault directories
-- `vault_clean_index` - Remove existing index files
-- `vault_ensure_metadata` - Synchronize metadata across markdown files
-- `vault_sync` - Sync vault with OneDrive (up/down)
-
-#### Tag Management
-
-- `tag_add_nested` - Add nested tags to markdown files
-- `tag_consolidate` - Merge duplicate tags
-- `tag_restructure` - Restructure tag hierarchy
-- `tag_update_frontmatter` - Update YAML frontmatter
-- `tag_diagnose_yaml` - Detect YAML issues
-- `tag_metadata_check` - Validate metadata consistency
-- `tag_clean_index` - Remove tag data from indexes
-
-#### File Conversion & Processing
-
-- `pdf_convert` - Convert PDF content to markdown
-- `video_create_notes` - Generate notes from video transcripts
-- `video_consolidate_transcripts` - Merge transcripts into class notes
-- `markdown_generate` - Convert HTML/EPUB to markdown
-
-#### Configuration & Authentication
-
-- `config_view` - Display current configuration
-- `config_update` - Modify settings
-- `config_validate` - Verify configuration
-- `config_list_keys` - List available config keys
-- `config_secrets_status` - Check authentication status
-- `onedrive_refresh_token` - Refresh OneDrive authentication
 
 ### 💡 Example Conversations
 
@@ -177,89 +66,6 @@ AI: [Scans vault using video tools]
     - lecture-02.mp4
     ...
 ```
-
-### 📊 Technical Details
-
-- **AI Provider**: Azure OpenAI or OpenAI via Microsoft.Extensions.AI
-- **Architecture**: Semantic Kernel with function calling
-- **Streaming**: Real-time token streaming for responsive interaction
-- **Session Persistence**: Automatic session saving and restoration
-- **Tool Execution**: Automatic tool invocation based on conversation context
-
-For complete technical documentation, see [SDK Integration Status](docs/SDK-INTEGRATION-STATUS.md).
-
-## 🏗️ Core Architecture: Location-Agnostic Design
-
-One of the fundamental architectural principles of Notebook Automation is **location-agnostic processing**, designed to seamlessly work across different computers, operating systems, and folder structures while maintaining consistency and portability.
-
-### 🌐 Cross-Platform Compatibility
-
-The system uses **relative paths** and **configuration-based resolution** to ensure your knowledge base works identically across different environments:
-
-**Document Placeholder Approach:**
-
-```yaml
-# Frontmatter in Document Placeholder
-title: "Operations Management Video"
-template-type: video-reference
-onedrive_relative_path: "Value Chain Management/Operations Management/course1/video1.mp4"
-```
-
-**Environment-Specific Configuration:**
-
-```json
-{
-  "onedrive_fullpath_root": "C:\\Users\\Alice\\OneDrive\\",
-  "onedrive_resources_basepath": "Education\\MBA-Resources",
-  "notebook_vault_fullpath_root": "D:\\MyVault\\",
-  "notebook_vault_resources_basepath": "01_Projects\\MBA"
-}
-```
-
-### 🔄 Smart Path Resolution
-
-The system intelligently resolves paths through multiple strategies:
-
-1. **Document Placeholders** store relative paths in frontmatter
-2. **Local configuration** provides environment-specific roots
-3. **Path resolution engine** combines relative + absolute paths
-4. **Multi-location search** finds files across vault structures
-5. **Graceful fallbacks** handle missing files or configurations
-
-### ✅ Benefits of This Architecture
-
-- **🤝 Team Collaboration**: Share Document Placeholders via Git without path conflicts
-- **💻 Device Independence**: Same vault works on laptop, desktop, any OS
-- **🔄 Backup/Restore**: Move vault to new computer, just update configuration
-- **🗂️ Flexible Organization**: Each team member can organize OneDrive differently
-- **🌍 Platform Agnostic**: Works seamlessly on Windows, macOS, and Linux
-
-### 🔧 Implementation Details
-
-The **Document Placeholder** acts as a contract between content and environment:
-
-- **Content Layer**: Relative paths, template types, metadata (portable)
-- **Configuration Layer**: Absolute paths, local preferences (environment-specific)
-- **Resolution Engine**: Intelligent path combining and file discovery
-
-### 📝 File Naming Conventions
-
-**Document Placeholders** follow a consistent naming pattern that indicates their content type:
-
-- **Video files**: `filename-video.md` (e.g., `03_01_defining-operations-management-video.md`)
-- **PDF files**: `filename-pdf.md` (e.g., `case-study-analysis-pdf.md`)
-- **Reading materials**: `filename-html.md` (e.g., `course-instructions-html.md`)
-
-This naming convention ensures:
-
-- **🔍 Easy Identification**: File type is immediately apparent
-- **🔧 Processing Compatibility**: System correctly routes files to appropriate processors
-- **📂 Consistent Organization**: Placeholders and processed files follow same naming pattern
-- **🚀 Seamless Workflow**: No naming conflicts during automated processing
-
-When you create Document Placeholders (either manually or via vault sync), they automatically use the correct suffix based on the referenced content type. The processing system then generates final notes with matching names, ensuring a smooth end-to-end workflow.
-
-This creates a **portable, shareable knowledge management system** that adapts to each user's setup while maintaining consistency in content and workflow.
 
 ## 📸 Screenshots & Features
 
@@ -334,25 +140,39 @@ The plugin seamlessly integrates with Obsidian's native interface through contex
 
 ![Obsidian Plugin Integration - Contextual Menu](docs/images/ObsidianContextualMenuOptions.png)
 
+### AI Chat with Interactive File Browser
+
+![AI Chat - Showing Courses](docs/images/notebook-ai-show-courses.png)
+
+**Natural Language Content Queries**: Ask questions about your vault in plain English and get instant, contextual answers. The AI assistant understands your course structure, can list programs and materials, summarize content organization, and provide insights about your knowledge base—all through simple conversation. In this example, the AI provides a comprehensive overview of available courses and their hierarchical organization.
+
+![AI Chat - Available Tools](docs/images/notebook-ai-available-tools.png)
+
+**AI-Powered Tool Integration**: Access 21+ specialized tools directly from the chat interface, including vault management, content processing, OneDrive synchronization, and markdown generation. The AI assistant intelligently suggests and executes tools based on your natural language requests.
+
+![AI Chat - AI About](docs/images/notebook-ai-about.png)
+
+**Professional Terminal Interface**: Features a retro Turbo Pascal color scheme (blue/yellow/cyan) with comprehensive keyboard shortcuts, menubar navigation, and helpful status indicators. The interface includes ASCII art branding and provides immediate feedback on all operations.
+
 #### OneDrive & Vault Synchronization
 
 The toolkit includes sophisticated synchronization capabilities that bridge your Obsidian vault with OneDrive storage, ensuring your educational content remains accessible across all devices and platforms. The system supports both bidirectional synchronization (default) for seamless two-way updates, and unidirectional synchronization for controlled content flow. This flexible approach allows you to maintain local vault organization while leveraging cloud storage benefits, automatically handling file mapping, conflict resolution, and maintaining metadata consistency between your vault structure and OneDrive folders.
 
 ## 📖 Documentation
 
-| Section                                                      | Description                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------- |
-| [**Documentation Home**](docs/index.md)                      | Main documentation portal with quick navigation               |
-| [**Download**](docs/download.md)                             | Get the latest release for your platform                      |
-| [**Getting Started**](docs/getting-started/index.md)         | Installation, setup, and first steps                          |
-| [**Features**](docs/features/index.md)                       | Complete feature overview and capabilities                    |
-| [**User Guide**](docs/user-guide/index.md)                   | Comprehensive usage documentation                             |
-| [**Configuration**](docs/configuration/index.md)             | Settings and customization options                            |
-| [**Tutorials**](docs/tutorials/index.md)                     | Step-by-step examples and workflows                           |
-| [**Developer**](docs/developer/index.md)                     | Architecture, API reference, and contributing                 |
-| [**Troubleshooting**](docs/troubleshooting/index.md)         | Common issues and solutions                                   |
-| [**Changelog**](CHANGELOG.md)                                | Version history and release notes                             |
-| [**Roadmap**](docs/roadmap.md)                               | Upcoming features and development plans                       |
+| Section                                              | Description                                     |
+| ---------------------------------------------------- | ----------------------------------------------- |
+| [**Documentation Home**](docs/index.md)              | Main documentation portal with quick navigation |
+| [**Download**](docs/download.md)                     | Get the latest release for your platform        |
+| [**Getting Started**](docs/getting-started/index.md) | Installation, setup, and first steps            |
+| [**Features**](docs/features/index.md)               | Complete feature overview and capabilities      |
+| [**User Guide**](docs/user-guide/index.md)           | Comprehensive usage documentation               |
+| [**Configuration**](docs/configuration/index.md)     | Settings and customization options              |
+| [**Tutorials**](docs/tutorials/index.md)             | Step-by-step examples and workflows             |
+| [**Developer**](docs/developer/index.md)             | Architecture, API reference, and contributing   |
+| [**Troubleshooting**](docs/troubleshooting/index.md) | Common issues and solutions                     |
+| [**Changelog**](CHANGELOG.md)                        | Version history and release notes               |
+| [**Roadmap**](docs/roadmap.md)                       | Upcoming features and development plans         |
 
 ## 🛠️ System Requirements
 

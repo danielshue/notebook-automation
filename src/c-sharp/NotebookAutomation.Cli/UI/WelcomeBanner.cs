@@ -60,7 +60,7 @@ public class WelcomeBanner
                 "  [italic]• Process videos in my Financial Management folder[/]\n" +
                 "  [italic]• Show me notes tagged with #economics[/]\n" +
                 "  [italic]• Build the index for my vault[/]\n\n" +
-                "Commands: [dim]help, exit, clear, history, model, session, !cmd[/]"))
+                "Commands: [dim]help, browse, model, history,  clear, session, exit, !cmd[/]"))
         {
             Border = BoxBorder.Rounded,
             BorderStyle = new Style(Color.Blue),

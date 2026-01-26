@@ -1,6 +1,10 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using NotebookAutomation.Cli.Services.Copilot;
+using NotebookAutomation.Cli.UI.Browser;
+using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Tools.Vault;
 
 namespace NotebookAutomation.Cli.Services.Copilot;
 
@@ -11,6 +15,10 @@ public class ChatBuiltInCommands
 {
     private readonly ILogger<ChatBuiltInCommands> logger;
     private readonly ICopilotService copilotService;
+    private readonly IVaultBrowserService? vaultBrowserService;
+    private readonly IOneDriveService? oneDriveService;
+    private readonly AppConfig? appConfig;
+    private readonly ILoggerFactory loggerFactory;
     private string? currentModel;
 
     /// <summary>
@@ -18,12 +26,24 @@ public class ChatBuiltInCommands
     /// </summary>
     /// <param name="logger">Logger instance.</param>
     /// <param name="copilotService">Copilot service.</param>
+    /// <param name="vaultBrowserService">Vault browser service (optional).</param>
+    /// <param name="oneDriveService">OneDrive service (optional).</param>
+    /// <param name="appConfig">Application configuration (optional).</param>
+    /// <param name="loggerFactory">Logger factory for creating loggers.</param>
     public ChatBuiltInCommands(
         ILogger<ChatBuiltInCommands> logger,
-        ICopilotService copilotService)
+        ICopilotService copilotService,
+        IVaultBrowserService? vaultBrowserService,
+        IOneDriveService? oneDriveService,
+        AppConfig? appConfig,
+        ILoggerFactory loggerFactory)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.copilotService = copilotService ?? throw new ArgumentNullException(nameof(copilotService));
+        this.vaultBrowserService = vaultBrowserService;
+        this.oneDriveService = oneDriveService;
+        this.appConfig = appConfig;
+        this.loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
     /// <summary>
@@ -57,9 +77,11 @@ public class ChatBuiltInCommands
             "history" => true,
             "model" => true,
             "session" => true,
+            "browse" => true,
             _ when command.StartsWith("help ") => true,
             _ when command.StartsWith("model ") => true,
             _ when command.StartsWith("session ") => true,
+            _ when command.StartsWith("browse ") => true,
             _ when command.StartsWith("!") => true,
             _ => false
         };
@@ -121,6 +143,12 @@ public class ChatBuiltInCommands
             return false;
         }
 
+        // Browse command
+        if (command == "browse" || command.StartsWith("browse "))
+        {
+            return await HandleBrowseCommandAsync(command, session, cancellationToken);
+        }
+
         // Direct CLI execution
         if (command.StartsWith("!"))
         {
@@ -156,6 +184,8 @@ public class ChatBuiltInCommands
             table.AddRow("[cyan]model <name>[/]", "Switch to a different model");
             table.AddRow("[cyan]session[/]", "Show current session info");
             table.AddRow("[cyan]session list[/]", "List saved sessions");
+            table.AddRow("[cyan]browse[/]", "Browse vault files interactively");
+            table.AddRow("[cyan]browse <path>[/]", "Browse starting at a specific path");
             table.AddRow("[cyan]!<command>[/]", "Execute CLI command directly");
 
             AnsiConsole.Write(table);
@@ -256,9 +286,32 @@ public class ChatBuiltInCommands
                 AnsiConsole.MarkupLine("  [cyan]Tab[/]       Auto-complete commands");
                 break;
 
+            case "browse":
+                AnsiConsole.MarkupLine("[bold]Browse Command[/]");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("Interactive file browser for navigating your vault.");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[bold]Usage:[/]");
+                AnsiConsole.MarkupLine("  [cyan]browse[/]              Open browser at vault root");
+                AnsiConsole.MarkupLine("  [cyan]browse vault[/]        Browse vault files");
+                AnsiConsole.MarkupLine("  [cyan]browse vault <path>[/] Browse at specific path");
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[bold]Keyboard Controls:[/]");
+                AnsiConsole.MarkupLine("  [cyan]↑/↓[/]      Navigate up/down");
+                AnsiConsole.MarkupLine("  [cyan]Enter/→[/]  Open folder / Select file");
+                AnsiConsole.MarkupLine("  [cyan]←/Backspace[/] Go to parent directory");
+                AnsiConsole.MarkupLine("  [cyan]r[/]        Read/Preview file");
+                AnsiConsole.MarkupLine("  [cyan]e[/]        Edit file");
+                AnsiConsole.MarkupLine("  [cyan]d[/]        Delete file");
+                AnsiConsole.MarkupLine("  [cyan]t[/]        Manage tags");
+                AnsiConsole.MarkupLine("  [cyan]n[/]        Create new file");
+                AnsiConsole.MarkupLine("  [cyan]s[/]        Send to Copilot");
+                AnsiConsole.MarkupLine("  [cyan]q/Esc[/]    Exit browser");
+                break;
+
             default:
                 AnsiConsole.MarkupLine($"[yellow]Unknown help topic:[/] {topic}");
-                AnsiConsole.MarkupLine("[dim]Available topics:[/] tools, models, session, shortcuts");
+                AnsiConsole.MarkupLine("[dim]Available topics:[/] tools, models, session, shortcuts, browse");
                 break;
         }
     }
@@ -570,5 +623,215 @@ public class ChatBuiltInCommands
             logger.LogWarning(ex, "Failed to execute command: {Command}", command);
             AnsiConsole.MarkupLine($"[red]Failed to execute command:[/] {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Handles the browse command for interactive file browsing.
+    /// </summary>
+    /// <param name="command">The browse command with optional arguments.</param>
+    /// <param name="session">The current Copilot session.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if the chat should exit, false otherwise.</returns>
+    private async Task<bool> HandleBrowseCommandAsync(
+        string command,
+        ICopilotSession? session,
+        CancellationToken cancellationToken)
+    {
+        // Parse command arguments
+        var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var source = parts.Length > 1 ? parts[1].ToLowerInvariant() : "vault";
+        var initialPath = parts.Length > 2 ? string.Join(" ", parts.Skip(2)) : null;
+
+        // Available sources for switching
+        var sources = new[] { "vault", "onedrive" };
+        var currentSourceIndex = Array.IndexOf(sources, source);
+        if (currentSourceIndex < 0)
+        {
+            currentSourceIndex = 0;
+            source = "vault";
+        }
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            // Check source availability and create appropriate browser source
+            IFileBrowserSource? browserSource = null;
+
+            if (source == "onedrive")
+            {
+                if (oneDriveService == null)
+                {
+                    AnsiConsole.MarkupLine("[yellow]OneDrive is not configured.[/]");
+                    AnsiConsole.MarkupLine("[dim]Press any key to switch to Vault browser, or 'q' to exit.[/]");
+                    var key = Console.ReadKey(true);
+                    if (key.Key == ConsoleKey.Q)
+                    {
+                        return false;
+                    }
+
+                    source = "vault";
+                    currentSourceIndex = 0;
+                    continue;
+                }
+
+                try
+                {
+                    var oneDriveSource = new OneDriveBrowserSource(
+                        oneDriveService,
+                        loggerFactory.CreateLogger<OneDriveBrowserSource>());
+
+                    // Authenticate before browsing
+                    AnsiConsole.Status()
+                        .Spinner(Spinner.Known.Dots)
+                        .Start("[dim]Authenticating with OneDrive...[/]", ctx =>
+                        {
+                            oneDriveSource.EnsureAuthenticatedAsync().GetAwaiter().GetResult();
+                        });
+
+                    browserSource = oneDriveSource;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to authenticate with OneDrive");
+                    AnsiConsole.MarkupLine($"[red]OneDrive authentication failed:[/] {ex.Message.EscapeMarkup()}");
+                    AnsiConsole.MarkupLine("[dim]Press any key to switch to Vault browser, or 'q' to exit.[/]");
+                    var key = Console.ReadKey(true);
+                    if (key.Key == ConsoleKey.Q)
+                    {
+                        return false;
+                    }
+
+                    source = "vault";
+                    currentSourceIndex = 0;
+                    continue;
+                }
+            }
+            else if (source == "vault")
+            {
+                if (vaultBrowserService == null)
+                {
+                    AnsiConsole.MarkupLine("[yellow]Vault is not configured.[/]");
+                    if (oneDriveService != null)
+                    {
+                        AnsiConsole.MarkupLine("[dim]Press any key to switch to OneDrive browser, or 'q' to exit.[/]");
+                        var key = Console.ReadKey(true);
+                        if (key.Key == ConsoleKey.Q)
+                        {
+                            return false;
+                        }
+
+                        source = "onedrive";
+                        currentSourceIndex = 1;
+                        continue;
+                    }
+
+                    AnsiConsole.MarkupLine("[dim]Please configure your vault path in the settings to use the browser.[/]");
+                    return false;
+                }
+
+                browserSource = new VaultBrowserSource(
+                    vaultBrowserService,
+                    loggerFactory.CreateLogger<VaultBrowserSource>());
+            }
+
+            if (browserSource == null)
+            {
+                AnsiConsole.MarkupLine("[red]No browser source available.[/]");
+                return false;
+            }
+
+            try
+            {
+                // Determine initial path based on source and configuration
+                // For both sources, use provided path or default to root
+                var effectiveInitialPath = initialPath ?? string.Empty;
+
+                var browserOptions = new FileBrowserOptions
+                {
+                    InitialPath = effectiveInitialPath,
+                    EnableFileOperations = true
+                };
+
+                var browserUI = new FileBrowserUI(
+                    browserSource,
+                    loggerFactory.CreateLogger<FileBrowserUI>(),
+                    browserOptions);
+
+                // Run the browser
+                var result = await browserUI.RunAsync(cancellationToken);
+
+                // Handle the result
+                switch (result.LastAction)
+                {
+                    case BrowseAction.SwitchSource:
+                        // Toggle to the next source
+                        currentSourceIndex = (currentSourceIndex + 1) % sources.Length;
+                        source = sources[currentSourceIndex];
+                        initialPath = null; // Reset path when switching
+                        AnsiConsole.Clear();
+                        continue; // Loop back to try the new source
+
+                    case BrowseAction.SendToCopilot when session != null && result.SelectedPath != null:
+                        // Read the file and send to Copilot
+                        var fileResult = await browserSource.ReadFileAsync(result.SelectedPath, cancellationToken);
+                        if (fileResult.IsSuccess && fileResult.Value != null)
+                        {
+                            AnsiConsole.Clear();
+                            AnsiConsole.MarkupLine($"[dim]Sending[/] [cyan]{fileResult.Value.Info.Name}[/] [dim]to Copilot...[/]");
+
+                            // Format content for Copilot
+                            var fileContent = $"Please analyze this note:\n\n**File:** {fileResult.Value.Info.Name}\n**Path:** {fileResult.Value.Info.Path}\n\n```markdown\n{fileResult.Value.Content}\n```";
+
+                            // Send to Copilot (this would stream the response)
+                            var responseBuilder = new StringBuilder();
+                            await AnsiConsole.Status()
+                                .Spinner(Spinner.Known.Dots)
+                                .SpinnerStyle(Style.Parse("green"))
+                                .StartAsync("Analyzing...", async ctx =>
+                                {
+                                    await foreach (var chunk in session.SendMessageStreamAsync(fileContent, cancellationToken))
+                                    {
+                                        responseBuilder.Append(chunk);
+                                    }
+                                });
+
+                            // Display response
+                            var fullResponse = responseBuilder.ToString();
+                            if (!string.IsNullOrWhiteSpace(fullResponse))
+                            {
+                                AnsiConsole.Markup("[green]AI[/] > ");
+                                MarkdownRenderer.RenderLine(fullResponse);
+                            }
+
+                            AnsiConsole.WriteLine();
+                        }
+                        else
+                        {
+                            AnsiConsole.MarkupLine($"[red]Error reading file:[/] {fileResult.Error}");
+                        }
+
+                        return false;
+
+                    case BrowseAction.Selected when result.SelectedPath != null:
+                        // Browser already cleared screen, just show result
+                        AnsiConsole.MarkupLine($"[green]Selected:[/] {result.SelectedPath}");
+                        return false;
+
+                    case BrowseAction.Cancelled:
+                        // Browser already cleared screen on exit, just return
+                        return false;
+
+                    default:
+                        return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error in browse command");
+                AnsiConsole.MarkupLine($"[red]Error: {ex.Message.EscapeMarkup()}[/]");
+                return false;
+            }
+        }
+
+        return false;
     }
 }
