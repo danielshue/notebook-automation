@@ -202,7 +202,7 @@ public class VaultBrowserSourceTests
                 LastModified = DateTime.Now
             },
             Frontmatter = new Dictionary<string, object>(),
-            Tags = new HashSet<string> { "tag1", "tag2", "tag3" }.ToHashSet(),
+            Tags = new HashSet<string> { "tag1", "tag2", "tag3" },
             Created = DateTime.Now
         };
 

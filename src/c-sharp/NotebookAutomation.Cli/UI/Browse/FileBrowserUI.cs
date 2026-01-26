@@ -247,10 +247,11 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
             var previewContent = fileContent.Content;
             
             // Limit preview to first 50 lines for display
-            var lines = previewContent.Split('\n').Take(50).ToArray();
-            var displayContent = string.Join('\n', lines);
+            var lines = previewContent.Split('\n');
+            var displayLines = lines.Take(50).ToArray();
+            var displayContent = string.Join('\n', displayLines);
             
-            if (fileContent.Content.Split('\n').Length > 50)
+            if (lines.Length > 50)
             {
                 displayContent += "\n[dim]... (content truncated)[/]";
             }

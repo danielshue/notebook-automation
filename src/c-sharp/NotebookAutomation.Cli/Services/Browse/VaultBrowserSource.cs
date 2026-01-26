@@ -186,6 +186,8 @@ public class VaultBrowserSource(IVaultBrowserService vaultBrowser) : IFileBrowse
         frontmatter["tags"] = tags.ToList();
 
         // Reconstruct content with updated frontmatter
+        // Note: This is a simplified YAML serialization. For production use,
+        // consider using a proper YAML library like YamlDotNet for correct formatting.
         var yamlContent = "---\n";
         foreach (var kvp in frontmatter)
         {
