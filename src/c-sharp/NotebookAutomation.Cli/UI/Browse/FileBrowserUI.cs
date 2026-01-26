@@ -1,16 +1,16 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using NotebookAutomation.Cli.Models.Browse;
-using NotebookAutomation.Cli.Services.Browse;
+using NotebookAutomation.Core.Tools.Vault;
 
 namespace NotebookAutomation.Cli.UI.Browse;
 
 /// <summary>
 /// Interactive file browser UI using Spectre.Console.
 /// </summary>
-public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> logger)
+public class FileBrowserUI(IVaultBrowserService vaultBrowserService, ILogger<FileBrowserUI> logger)
 {
-    private readonly IFileBrowserSource _source = source ?? throw new ArgumentNullException(nameof(source));
+    private readonly IVaultBrowserService _vaultBrowserService = vaultBrowserService ?? throw new ArgumentNullException(nameof(vaultBrowserService));
     private readonly ILogger<FileBrowserUI> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private string _currentPath = string.Empty;
 
@@ -33,26 +33,29 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
         {
             try
             {
-                // List current directory
-                var listResult = await _source.ListDirectoryAsync(_currentPath, cancellationToken);
+                // List current directory using VaultBrowserService
+                var vaultResult = _vaultBrowserService.ListDirectory(_currentPath);
 
-                if (!listResult.IsSuccess)
+                if (!vaultResult.IsSuccess)
                 {
-                    AnsiConsole.MarkupLine($"[red]Error:[/] {listResult.ErrorMessage?.EscapeMarkup()}");
+                    AnsiConsole.MarkupLine($"[red]Error:[/] {vaultResult.Error?.EscapeMarkup()}");
                     break;
                 }
 
-                var listing = listResult.Data!;
+                var vaultListing = vaultResult.Value!;
 
-                // Display the current path and source
-                DisplayHeader(listing.CurrentPath);
+                // Display the current path
+                DisplayHeader(vaultListing.Path);
 
-                // If empty directory
-                if (listing.Items.Count == 0)
+                // Check if directory is empty
+                var totalItems = vaultListing.Directories.Count + vaultListing.Files.Count;
+                var hasParent = !string.IsNullOrEmpty(_currentPath) && _currentPath != "/";
+
+                if (totalItems == 0)
                 {
                     AnsiConsole.MarkupLine("[dim]This directory is empty.[/]");
                     
-                    if (!listing.HasParent)
+                    if (!hasParent)
                     {
                         AnsiConsole.MarkupLine("[yellow]Press any key to exit...[/]");
                         Console.ReadKey(true);
@@ -62,7 +65,7 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
                     }
 
                     var goBack = AnsiConsole.Confirm("Go back to parent directory?", true);
-                    if (goBack && listing.HasParent)
+                    if (goBack)
                     {
                         _currentPath = GetParentPath(_currentPath);
                     }
@@ -76,18 +79,27 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
 
                 // Build choices list
                 var choices = new List<string>();
+                var itemMap = new Dictionary<string, (bool IsDirectory, string Path)>();
                 
-                if (listing.HasParent)
+                if (hasParent)
                 {
                     choices.Add("[dim].. (Parent Directory)[/]");
                 }
 
-                foreach (var item in listing.SortedItems)
+                // Add directories
+                foreach (var dir in vaultListing.Directories)
                 {
-                    var displayName = item.IsDirectory
-                        ? $"📁 [cyan]{item.Name}[/]"
-                        : $"📄 {item.Name.EscapeMarkup()} [dim]{item.SizeFormatted}[/]";
+                    var displayName = $"📁 [cyan]{dir.Name}[/]";
                     choices.Add(displayName);
+                    itemMap[displayName] = (true, dir.RelativePath);
+                }
+
+                // Add files
+                foreach (var file in vaultListing.Files)
+                {
+                    var displayName = $"📄 {file.Name.EscapeMarkup()} [dim]{file.SizeFormatted}[/]";
+                    choices.Add(displayName);
+                    itemMap[displayName] = (false, file.RelativePath);
                 }
 
                 choices.Add("[dim]────────────────────────[/]");
@@ -110,7 +122,7 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
                 }
                 else if (selection == "[yellow]⬅ Go Back[/]")
                 {
-                    if (listing.HasParent)
+                    if (hasParent)
                     {
                         _currentPath = GetParentPath(_currentPath);
                     }
@@ -124,48 +136,45 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
                 {
                     _currentPath = GetParentPath(_currentPath);
                 }
-                else
+                else if (itemMap.TryGetValue(selection, out var item))
                 {
-                    // Find the selected item
-                    var selectedIndex = choices.IndexOf(selection) - (listing.HasParent ? 1 : 0);
-                    var selectedItem = listing.SortedItems[selectedIndex];
-
-                    if (selectedItem.IsDirectory)
+                    if (item.IsDirectory)
                     {
                         // Navigate into directory
-                        _currentPath = selectedItem.Path;
+                        _currentPath = item.Path;
                     }
                     else
                     {
                         // File selected - show actions menu
-                        var action = await ShowFileActionsMenuAsync(selectedItem, cancellationToken);
+                        var action = await ShowFileActionsMenuAsync(item.Path, cancellationToken);
                         
                         if (action == "view")
                         {
-                            await ShowFilePreviewAsync(selectedItem.Path, cancellationToken);
+                            await ShowFilePreviewAsync(item.Path, cancellationToken);
                         }
                         else if (action == "select")
                         {
-                            selectedPath = selectedItem.Path;
+                            selectedPath = item.Path;
                             lastAction = BrowseAction.Selected;
                             exitRequested = true;
                         }
                         else if (action == "delete")
                         {
+                            var fileName = System.IO.Path.GetFileName(item.Path);
                             var confirmed = AnsiConsole.Confirm(
-                                $"Are you sure you want to delete [red]{selectedItem.Name.EscapeMarkup()}[/]?",
+                                $"Are you sure you want to delete [red]{fileName.EscapeMarkup()}[/]?",
                                 defaultValue: false);
                             
                             if (confirmed)
                             {
-                                var deleteResult = await _source.DeleteFileAsync(selectedItem.Path, cancellationToken);
+                                var deleteResult = _vaultBrowserService.DeleteNote(item.Path);
                                 if (deleteResult.IsSuccess)
                                 {
                                     AnsiConsole.MarkupLine("[green]✓[/] File deleted successfully");
                                 }
                                 else
                                 {
-                                    AnsiConsole.MarkupLine($"[red]Error:[/] {deleteResult.ErrorMessage?.EscapeMarkup()}");
+                                    AnsiConsole.MarkupLine($"[red]Error:[/] {deleteResult.Error?.EscapeMarkup()}");
                                 }
                                 
                                 AnsiConsole.MarkupLine("[dim]Press any key to continue...[/]");
@@ -192,7 +201,7 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
     {
         var panel = new Panel(
             Align.Left(
-                new Markup($"[bold]📁 {_source.SourceName} File Browser[/]\n[dim]Path:[/] [cyan]{currentPath.EscapeMarkup()}[/]")))
+                new Markup($"[bold]📁 Vault File Browser[/]\n[dim]Path:[/] [cyan]{currentPath.EscapeMarkup()}[/]")))
         {
             Border = BoxBorder.Rounded,
             BorderStyle = new Style(Color.Blue),
@@ -204,8 +213,10 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
         AnsiConsole.WriteLine();
     }
 
-    private async Task<string> ShowFileActionsMenuAsync(BrowseItem item, CancellationToken cancellationToken)
+    private async Task<string> ShowFileActionsMenuAsync(string filePath, CancellationToken cancellationToken)
     {
+        var fileName = System.IO.Path.GetFileName(filePath);
+        
         var choices = new List<string>
         {
             "📖 View/Preview",
@@ -217,9 +228,11 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
 
         var action = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title($"[bold]Actions for:[/] {item.Name.EscapeMarkup()}")
+                .Title($"[bold]Actions for:[/] {fileName.EscapeMarkup()}")
                 .AddChoices(choices));
 
+        await Task.CompletedTask;
+        
         return action switch
         {
             "📖 View/Preview" => "view",
@@ -233,18 +246,18 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
     {
         try
         {
-            var readResult = await _source.ReadFileAsync(path, cancellationToken);
+            var readResult = _vaultBrowserService.ReadNote(path);
 
             if (!readResult.IsSuccess)
             {
-                AnsiConsole.MarkupLine($"[red]Error reading file:[/] {readResult.ErrorMessage?.EscapeMarkup()}");
+                AnsiConsole.MarkupLine($"[red]Error reading file:[/] {readResult.Error?.EscapeMarkup()}");
                 return;
             }
 
-            var fileContent = readResult.Data!;
+            var noteContent = readResult.Value!;
             
             // Create preview panel
-            var previewContent = fileContent.Content;
+            var previewContent = noteContent.Content;
             
             // Limit preview to first 50 lines for display
             var lines = previewContent.Split('\n');
@@ -258,7 +271,7 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
 
             var panel = new Panel(displayContent.EscapeMarkup())
             {
-                Header = new PanelHeader($"📄 {fileContent.Info.Name.EscapeMarkup()}"),
+                Header = new PanelHeader($"📄 {noteContent.Info.Name.EscapeMarkup()}"),
                 Border = BoxBorder.Rounded,
                 BorderStyle = new Style(Color.Blue),
                 Padding = new Padding(2, 1)
@@ -273,14 +286,16 @@ public class FileBrowserUI(IFileBrowserSource source, ILogger<FileBrowserUI> log
                 .Border(TableBorder.None)
                 .AddColumn("[dim]Property[/]")
                 .AddColumn("[dim]Value[/]")
-                .AddRow("Size", fileContent.Info.SizeFormatted)
-                .AddRow("Modified", fileContent.Info.LastModified?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A");
+                .AddRow("Size", noteContent.Info.SizeFormatted)
+                .AddRow("Modified", noteContent.Info.LastModified.ToString("yyyy-MM-dd HH:mm:ss"));
             
             AnsiConsole.Write(info);
             AnsiConsole.WriteLine();
 
             AnsiConsole.MarkupLine("[dim]Press any key to go back...[/]");
             Console.ReadKey(true);
+            
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {

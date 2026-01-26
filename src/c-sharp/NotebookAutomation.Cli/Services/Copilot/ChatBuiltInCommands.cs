@@ -1,7 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using NotebookAutomation.Cli.Services.Browse;
-using NotebookAutomation.Cli.Services.Copilot;
 using NotebookAutomation.Cli.UI.Browse;
 using NotebookAutomation.Core.Tools.Vault;
 
@@ -631,12 +629,9 @@ public class ChatBuiltInCommands
 
         try
         {
-            // Create vault browser source
-            var vaultSource = new VaultBrowserSource(vaultBrowserService);
-
             // Create file browser UI
             var browserLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger<FileBrowserUI>.Instance;
-            var browserUI = new FileBrowserUI(vaultSource, browserLogger);
+            var browserUI = new FileBrowserUI(vaultBrowserService, browserLogger);
 
             // Run the browser
             AnsiConsole.WriteLine();
