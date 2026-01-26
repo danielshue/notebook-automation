@@ -1,7 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using NotebookAutomation.Cli.Services.Browse;
 using NotebookAutomation.Cli.UI.Browse;
-using NotebookAutomation.Core.Tools.Vault;
 
 namespace NotebookAutomation.Cli.Services.Copilot;
 
@@ -12,7 +12,7 @@ public class ChatBuiltInCommands
 {
     private readonly ILogger<ChatBuiltInCommands> logger;
     private readonly ICopilotService copilotService;
-    private readonly IVaultBrowserService? vaultBrowserService;
+    private readonly IFileBrowserSource? fileBrowserSource;
     private string? currentModel;
 
     /// <summary>
@@ -20,15 +20,15 @@ public class ChatBuiltInCommands
     /// </summary>
     /// <param name="logger">Logger instance.</param>
     /// <param name="copilotService">Copilot service.</param>
-    /// <param name="vaultBrowserService">Vault browser service (optional).</param>
+    /// <param name="fileBrowserSource">File browser source (optional, provided by service agent).</param>
     public ChatBuiltInCommands(
         ILogger<ChatBuiltInCommands> logger,
         ICopilotService copilotService,
-        IVaultBrowserService? vaultBrowserService = null)
+        IFileBrowserSource? fileBrowserSource = null)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.copilotService = copilotService ?? throw new ArgumentNullException(nameof(copilotService));
-        this.vaultBrowserService = vaultBrowserService;
+        this.fileBrowserSource = fileBrowserSource;
     }
 
     /// <summary>
@@ -595,11 +595,12 @@ public class ChatBuiltInCommands
     {
         var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // Check if vault browser service is available
-        if (vaultBrowserService == null)
+        // Check if file browser source is available
+        if (fileBrowserSource == null)
         {
-            AnsiConsole.MarkupLine("[red]Vault browser service is not available.[/]");
-            AnsiConsole.MarkupLine("[dim]Make sure the vault is configured properly.[/]");
+            AnsiConsole.MarkupLine("[red]File browser service is not available.[/]");
+            AnsiConsole.MarkupLine("[dim]The browse feature requires a file browser source implementation.[/]");
+            AnsiConsole.MarkupLine("[dim]This will be provided by the service layer.[/]");
             return;
         }
 
@@ -631,7 +632,7 @@ public class ChatBuiltInCommands
         {
             // Create file browser UI
             var browserLogger = Microsoft.Extensions.Logging.Abstractions.NullLogger<FileBrowserUI>.Instance;
-            var browserUI = new FileBrowserUI(vaultBrowserService, browserLogger);
+            var browserUI = new FileBrowserUI(fileBrowserSource, browserLogger);
 
             // Run the browser
             AnsiConsole.WriteLine();
