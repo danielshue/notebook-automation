@@ -1,6 +1,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { TextChunkingService } from '../utils/TextChunking';
+import { IPromptService } from './PromptService';
+import { ICacheService } from './CacheService';
 
 /**
  * Configuration for timeout and retry behavior.
@@ -73,11 +75,15 @@ export class AISummarizer implements IAISummarizer {
    * @param apiKey - OpenAI API key for authentication.
    * @param chunkingService - Optional text chunking service. If not provided, creates a default instance.
    * @param timeoutConfig - Optional timeout configuration. If not provided, uses defaults.
+   * @param promptService - Optional prompt service for template loading.
+   * @param cacheService - Optional cache service for caching summaries.
    */
   constructor(
     private readonly apiKey: string,
     chunkingService?: TextChunkingService,
-    timeoutConfig?: TimeoutConfig
+    timeoutConfig?: TimeoutConfig,
+    private readonly promptService?: IPromptService,
+    private readonly cacheService?: ICacheService
   ) {
     this.chunkingService = chunkingService || new TextChunkingService();
     this.timeoutConfig = timeoutConfig || DEFAULT_TIMEOUT_CONFIG;
@@ -86,6 +92,7 @@ export class AISummarizer implements IAISummarizer {
   /**
    * Generates an AI-powered summary for the given text using OpenAI.
    * Automatically selects between direct summarization and chunked processing based on text length.
+   * Checks cache before making API calls if cache service is available.
    * 
    * @param inputText - The text content to summarize.
    * @param variables - Optional dictionary of variables for prompt template substitution.
@@ -103,16 +110,56 @@ export class AISummarizer implements IAISummarizer {
     }
 
     const effectivePromptFileName = promptFileName || 'final_summary_prompt';
+
+    // Check cache first if available
+    if (this.cacheService) {
+      const cacheKey = this.cacheService.generateKey(
+        inputText + JSON.stringify(variables || {}) + effectivePromptFileName,
+        'summary'
+      );
+      const cachedSummary = this.cacheService.get<string>(cacheKey);
+      
+      if (cachedSummary) {
+        console.log('[AISummarizer] Using cached summary');
+        return cachedSummary;
+      }
+    }
+
+    // Load prompt template if service is available
+    let systemPrompt = this.buildSystemPrompt(variables);
+    if (this.promptService) {
+      const template = await this.promptService.loadTemplate(effectivePromptFileName);
+      if (template) {
+        systemPrompt = variables 
+          ? this.promptService.substituteVariables(template, variables)
+          : template;
+        console.log('[AISummarizer] Using custom prompt template');
+      }
+    }
+
     console.log(`[AISummarizer] Using prompt: ${effectivePromptFileName}`);
 
     // Check if input likely exceeds character limits and needs chunking
+    let summary: string | null = null;
     if (inputText.length > this.maxChunkTokens) {
       console.log(`[AISummarizer] Input text is large (${inputText.length} characters). Using chunking strategy.`);
-      return await this.summarizeWithChunking(inputText, variables);
+      summary = await this.summarizeWithChunking(inputText, variables, systemPrompt);
+    } else {
+      // For smaller texts, use direct approach
+      summary = await this.summarizeDirect(inputText, variables, systemPrompt);
     }
 
-    // For smaller texts, use direct approach
-    return await this.summarizeDirect(inputText, variables);
+    // Cache the result if cache service is available
+    if (summary && this.cacheService) {
+      const cacheKey = this.cacheService.generateKey(
+        inputText + JSON.stringify(variables || {}) + effectivePromptFileName,
+        'summary'
+      );
+      this.cacheService.set(cacheKey, summary, 3600); // Cache for 1 hour
+      console.log('[AISummarizer] Cached summary');
+    }
+
+    return summary;
   }
 
   /**
@@ -120,15 +167,17 @@ export class AISummarizer implements IAISummarizer {
    * 
    * @param inputText - The text to summarize.
    * @param variables - Optional variables for prompt enhancement.
+   * @param systemPrompt - Optional custom system prompt (uses default if not provided).
    * @returns The summary text.
    */
   private async summarizeDirect(
     inputText: string,
-    variables?: Record<string, string>
+    variables?: Record<string, string>,
+    systemPrompt?: string
   ): Promise<string | null> {
     try {
-      const systemPrompt = this.buildSystemPrompt(variables);
-      const result = await this.callOpenAI(systemPrompt, inputText);
+      const prompt = systemPrompt || this.buildSystemPrompt(variables);
+      const result = await this.callOpenAI(prompt, inputText);
       return result;
     } catch (error) {
       console.error('[AISummarizer] Failed to generate summary:', error);
@@ -142,11 +191,13 @@ export class AISummarizer implements IAISummarizer {
    * 
    * @param inputText - The text content to summarize.
    * @param variables - Optional variables for prompt enhancement.
+   * @param systemPrompt - Optional custom system prompt (uses default if not provided).
    * @returns The consolidated summary combining all chunk summaries.
    */
   private async summarizeWithChunking(
     inputText: string,
-    variables?: Record<string, string>
+    variables?: Record<string, string>,
+    systemPrompt?: string
   ): Promise<string | null> {
     try {
       console.log('[AISummarizer] Starting chunked summarization process');
