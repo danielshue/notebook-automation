@@ -4,6 +4,7 @@ import { App } from 'obsidian';
 
 /**
  * Service interface for prompt template loading and variable substitution.
+ * Matches the C# IPromptService interface for 1-to-1 functionality.
  */
 export interface IPromptService {
   /**
@@ -25,12 +26,22 @@ export interface IPromptService {
 
   /**
    * Loads a template and substitutes variables in one step.
+   * Equivalent to C# GetPromptAsync method.
    * 
    * @param templateName - Name of the template file (without .md extension).
    * @param variables - Dictionary of variable names to values.
    * @returns The processed template content, or null if template not found.
    */
   loadAndSubstitute(templateName: string, variables?: Record<string, string>): Promise<string | null>;
+
+  /**
+   * Alias for loadAndSubstitute to match C# interface.
+   * 
+   * @param templateName - Name of the template file (without .md extension).
+   * @param variables - Dictionary of variable names to values.
+   * @returns The processed template content, or null if template not found.
+   */
+  getPromptAsync(templateName: string, variables?: Record<string, string>): Promise<string | null>;
 }
 
 /**
@@ -140,6 +151,18 @@ export class PromptService implements IPromptService {
     }
 
     return template;
+  }
+
+  /**
+   * Alias for loadAndSubstitute to match C# IPromptService interface.
+   * Provides 1-to-1 compatibility with C# GetPromptAsync method.
+   * 
+   * @param templateName - Name of the template file (without .md extension).
+   * @param variables - Dictionary of variable names to values.
+   * @returns The processed template content, or null if template not found.
+   */
+  async getPromptAsync(templateName: string, variables?: Record<string, string>): Promise<string | null> {
+    return this.loadAndSubstitute(templateName, variables);
   }
 
   /**

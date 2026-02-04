@@ -1,6 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-import { App, TFile, TFolder, CachedMetadata } from 'obsidian';
+import { App, TFile, TFolder } from 'obsidian';
 import { TagOperationResult, YamlDiagnosisResult } from '../models';
 
 /**

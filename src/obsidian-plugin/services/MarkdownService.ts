@@ -168,12 +168,27 @@ export class MarkdownService implements IMarkdownService {
 
   private escapeYamlValue(value: any): string {
     if (typeof value === 'string') {
-      // Escape special YAML characters
-      if (value.includes(':') || value.includes('#') || value.includes('[') || value.includes(']') || value.includes('\\') || value.includes('"')) {
-        // Escape backslashes first, then double quotes
-        const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      // Check if value needs quoting
+      const needsQuoting = value === '' ||
+        value.trim() !== value ||
+        /[:#\[\]\{\}\|>&*!%@\\"'\r\n\t]/.test(value);
+
+      if (needsQuoting) {
+        // In double-quoted YAML strings, escape:
+        // - backslashes (must be first)
+        // - double quotes
+        // - newlines, carriage returns, and tabs
+        const escaped = value
+          .replace(/\\/g, '\\\\')  // backslash
+          .replace(/"/g, '\\"')    // double quote
+          .replace(/\n/g, '\\n')   // newline
+          .replace(/\r/g, '\\r')   // carriage return
+          .replace(/\t/g, '\\t');  // tab
+
         return `"${escaped}"`;
       }
+
+      // Simple values without special characters
       return value;
     }
     return String(value);
@@ -182,10 +197,17 @@ export class MarkdownService implements IMarkdownService {
   private parseYamlValue(value: string): any {
     const trimmed = value.trim();
     
-    // Remove quotes if present
+    // Remove quotes and unescape if present
     if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || 
         (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-      return trimmed.substring(1, trimmed.length - 1);
+      const unquoted = trimmed.substring(1, trimmed.length - 1);
+      // Unescape common sequences
+      return unquoted
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '\r')
+        .replace(/\\t/g, '\t')
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\');
     }
 
     // Parse numbers

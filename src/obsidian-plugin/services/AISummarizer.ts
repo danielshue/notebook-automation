@@ -52,22 +52,16 @@ export interface IAISummarizer {
 }
 
 /**
- * Result of processing a single chunk.
- */
-interface ChunkResult {
-  index: number;
-  summary: string | null;
-}
-
-/**
  * Provides AI-powered text summarization using OpenAI API.
  * Implements intelligent chunking strategies for large text processing.
  */
 export class AISummarizer implements IAISummarizer {
   private readonly chunkingService: TextChunkingService;
   private readonly timeoutConfig: TimeoutConfig;
-  private readonly maxChunkTokens = 8000; // Character-based chunks
-  private readonly overlapTokens = 500; // Characters to overlap between chunks
+  // NOTE: Despite the naming, these are character counts, not token counts
+  // This maintains compatibility with the C# implementation
+  private readonly maxChunkTokens = 8000; // Maximum characters per chunk
+  private readonly overlapTokens = 500; // Character overlap between chunks
 
   /**
    * Creates a new AISummarizer instance.
@@ -77,6 +71,7 @@ export class AISummarizer implements IAISummarizer {
    * @param timeoutConfig - Optional timeout configuration. If not provided, uses defaults.
    * @param promptService - Optional prompt service for template loading.
    * @param cacheService - Optional cache service for caching summaries.
+   * @throws {Error} If API key is invalid or empty.
    */
   constructor(
     private readonly apiKey: string,
@@ -85,6 +80,14 @@ export class AISummarizer implements IAISummarizer {
     private readonly promptService?: IPromptService,
     private readonly cacheService?: ICacheService
   ) {
+    // Validate API key
+    if (!apiKey || apiKey.trim().length === 0) {
+      throw new Error('OpenAI API key is required');
+    }
+    if (!apiKey.startsWith('sk-')) {
+      console.warn('[AISummarizer] API key does not start with "sk-" - this may be invalid');
+    }
+    
     this.chunkingService = chunkingService || new TextChunkingService();
     this.timeoutConfig = timeoutConfig || DEFAULT_TIMEOUT_CONFIG;
   }
