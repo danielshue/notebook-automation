@@ -169,8 +169,10 @@ export class MarkdownService implements IMarkdownService {
   private escapeYamlValue(value: any): string {
     if (typeof value === 'string') {
       // Escape special YAML characters
-      if (value.includes(':') || value.includes('#') || value.includes('[') || value.includes(']')) {
-        return `"${value.replace(/"/g, '\\"')}"`;
+      if (value.includes(':') || value.includes('#') || value.includes('[') || value.includes(']') || value.includes('\\') || value.includes('"')) {
+        // Escape backslashes first, then double quotes
+        const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return `"${escaped}"`;
       }
       return value;
     }
