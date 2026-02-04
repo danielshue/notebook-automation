@@ -1,7 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 import { App, TFile, TFolder } from 'obsidian';
-import { VaultItem, SearchResult } from '../models';
+import { VaultItem, SearchResult, SearchMatch } from '../models';
 
 /**
  * Service interface for vault browsing and search operations.
@@ -90,7 +90,7 @@ export class VaultService implements IVaultService {
       for (const file of files) {
         const content = await this.app.vault.cachedRead(file);
         const lines = content.split('\n');
-        const matches: any[] = [];
+        const matches: SearchMatch[] = [];
 
         // Search through each line
         for (let i = 0; i < lines.length; i++) {
