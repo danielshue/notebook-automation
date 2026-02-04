@@ -212,7 +212,6 @@ public static class ServiceRegistration
             if (providerType == "openai" && aiConfig.OpenAI != null)
             {
                 var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-                var endpoint = aiConfig.OpenAI.Endpoint ?? "https://api.openai.com/v1/chat/completions";
                 var model = aiConfig.OpenAI.Model ?? "gpt-4o";
 
                 // Validate OpenAI configuration before attempting to register
@@ -221,7 +220,9 @@ public static class ServiceRegistration
                     throw new InvalidOperationException("OpenAI API key is missing. Please set the OPENAI_API_KEY environment variable.");
                 }
 
-                skbuilder.AddOpenAIChatCompletion(model, openAiKey, endpoint);
+                // AddOpenAIChatCompletion signature: (modelId, apiKey, orgId, serviceId, httpClient)
+                // Pass null for orgId to use the API key's default organization
+                skbuilder.AddOpenAIChatCompletion(model, openAiKey, orgId: null);
             }
             else if (providerType == "azure" && aiConfig.Azure != null)
             {

@@ -17,7 +17,7 @@
     "scopes": ["Files.ReadWrite.All", "Sites.Read.All"]
   },
   "aiservice": {
-    "provider": "azure",
+    "provider": "openai",
     "openai": {
       "endpoint": "https://api.openai.com/v1/chat/completions",
       "model": "gpt-4o"
@@ -68,17 +68,5 @@
       "*index*": "gies-banner.png",
       "*main*": "gies-banner.png"
     }
-  },
-  "copilot": {
-    "enabled": true,
-    "autoChatMode": false,
-    "showWelcomeBanner": true,
-    "enableStreaming": true,
-    "sessionRetentionDays": 30,
-    "autoSaveSessions": true,
-    "maxSessions": 100,
-    "highContrast": false,
-    "defaultModel": "gpt-4",
-    "logLevel": "Information"
   }
 }
