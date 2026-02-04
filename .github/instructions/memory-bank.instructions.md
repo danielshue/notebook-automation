@@ -1,13 +1,13 @@
 ---
 applyTo: '**'
-description: Coding standards, domain knowledge, and preferences that AI should follow.
+description: Coding standards, domain knowledge, and preferences that AI should follow for the Notebook Automation project.
 ---
 
 # Memory Bank
 
 You are an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.
 
-## Memory Bank Structure
+## Memory Bank Structure for Notebook Automation
 
 The Memory Bank consists of required core files and optional context files, all in Markdown format. Files build upon each other in a clear hierarchy:
 
@@ -34,10 +34,10 @@ flowchart TD
    - Source of truth for project scope
 
 2. `productContext.md`
-   - Why this project exists
-   - Problems it solves
-   - How it should work
-   - User experience goals
+   - Why this project exists: Transform educational content into intelligent, searchable knowledge bases
+   - Problems it solves: Manual organization of course materials, annotation extraction, AI-powered summarization
+   - How it should work: Process PDFs, videos, transcripts, and integrate with Obsidian and Anki
+   - User experience goals: Seamless automation, location-agnostic design, extensible architecture
 
 3. `activeContext.md`
    - Current work focus
@@ -46,22 +46,22 @@ flowchart TD
    - Active decisions and considerations
 
 4. `systemPatterns.md`
-   - System architecture
-   - Key technical decisions
-   - Design patterns in use
-   - Component relationships
+   - System architecture: .NET 9.0 Core library with CLI and Obsidian plugin
+   - Key technical decisions: Location-agnostic path resolution, dependency injection, plugin extensibility
+   - Design patterns in use: Repository pattern, service layer, dependency injection
+   - Component relationships: Core → CLI/Plugin, Tools namespace organization
 
 5. `techContext.md`
-   - Technologies used
-   - Development setup
-   - Technical constraints
-   - Dependencies
+   - Technologies used: .NET 9.0, C# 13, MSTest, Moq, Obsidian TypeScript plugin
+   - Development setup: PowerShell scripts, VS Code tasks, cross-platform compatibility
+   - Technical constraints: Path resolution across Windows/macOS/Linux
+   - Dependencies: Microsoft.Extensions.DependencyInjection, various Azure and AI services
 
 6. `progress.md`
-   - What works
-   - What's left to build
-   - Current status
-   - Known issues
+   - What works: Core processing pipeline, Obsidian integration, OneDrive sync, AI summarization
+   - What's left to build: Based on current task backlog
+   - Current status: Active development, stable CLI and plugin
+   - Known issues: Track in GitHub Issues
 
 7. `tasks/` folder
    - Contains individual markdown files for each task
@@ -73,11 +73,26 @@ flowchart TD
 
 Create additional files/folders within memory-bank/ when they help organize:
 
-- Complex feature documentation
-- Integration specifications
-- API documentation
-- Testing strategies
-- Deployment procedures
+- Complex feature documentation (e.g., location-agnostic design details)
+- Integration specifications (e.g., Obsidian plugin API, OneDrive integration)
+- API documentation (e.g., service interfaces, resolver contracts)
+- Testing strategies (e.g., test organization, fixture usage)
+- Deployment procedures (e.g., build scripts, release process)
+
+### Project-Specific Context
+
+**Key Directories:**
+- `src/c-sharp/NotebookAutomation.Core/` - Main library with Tools, Services, Configuration
+- `src/c-sharp/NotebookAutomation.Cli/` - Command-line interface
+- `src/c-sharp/NotebookAutomation.Tests/` - MSTest unit and integration tests
+- `src/obsidian-plugin/` - TypeScript Obsidian plugin
+- `tests/fixtures/` - Test data and fixtures (repository root level)
+- `docs/` - Comprehensive documentation including architecture, user guide, developer guide
+
+**Important Concepts:**
+- **Document Placeholders**: Markdown files that reference content via relative paths
+- **Location-Agnostic Design**: Path resolution across different environments and folder structures
+- **Plugin System**: Extensible architecture for custom processors and resolvers
 
 ## Core Workflows
 
